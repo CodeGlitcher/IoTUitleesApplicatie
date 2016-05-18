@@ -1,7 +1,5 @@
 package iot.meetding;
 
-
-
 import jssc.SerialPort;
 import jssc.SerialPortList;
 
