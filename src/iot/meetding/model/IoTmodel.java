@@ -5,6 +5,8 @@ import jssc.SerialPort;
 import jssc.SerialPortList;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by Rob on 18-5-2016.
@@ -26,8 +28,8 @@ public class IoTmodel {
     }
 
 
-    public ArrayList<String> getComPorts(){
-        ArrayList<String> result = new ArrayList<>();
+    public HashSet<String> getComPorts(){
+        HashSet<String> result = new HashSet<>();
         String[] portNames = SerialPortList.getPortNames();
         for (String portName : portNames) {
             Logger.log(portName);
