@@ -38,6 +38,7 @@ public class MainWindow extends JFrame implements ActionListener {
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         button_refresh.addActionListener(this);
         comboBox_comPorts.addActionListener(this);
+
     }
 
     private void resetComPorts(){
