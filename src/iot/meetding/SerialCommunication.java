@@ -17,7 +17,7 @@ public class SerialCommunication {
     }
 
     public void setPort() throws InterruptedException {
-        lock1.acquire();
+
     }
 
 

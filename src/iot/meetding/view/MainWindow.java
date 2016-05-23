@@ -4,7 +4,6 @@ import iot.meetding.model.IoTmodel;
 
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
@@ -15,7 +14,7 @@ import java.util.Set;
  * Created by Rob on 13-5-2016.
  *
  */
-public class MainWindow extends JFrame implements ActionListener {
+public class MainWindow extends JFrame implements ActionListener, Observer {
 
 
     private JTabbedPane tabbedPane1;
@@ -31,8 +30,8 @@ public class MainWindow extends JFrame implements ActionListener {
 
     public MainWindow() {
         model = IoTmodel.getInstance();
+        model.addObserver(this);
         setContentPane(main);
-        resetComPorts();
         setSize(500,500);
         DefaultCaret caret = (DefaultCaret)textArea_output.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
@@ -41,9 +40,9 @@ public class MainWindow extends JFrame implements ActionListener {
 
     }
 
-    private void resetComPorts(){
+    private void resetComPorts() {
         comboBox_comPorts.removeAllItems();
-        Set<String> ports = model.getComPorts();
+        Set<String> ports = null;
         for(String port : ports){
             comboBox_comPorts.addItem(port);
         }
@@ -74,11 +73,21 @@ public class MainWindow extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         String action = e.getActionCommand();
         if(action.equals(button_refresh.getActionCommand())){
-            resetComPorts();
+            comboBox_comPorts.removeAllItems();
+            model.updateComPorts();
         } else if (action.equals(comboBox_comPorts.getActionCommand())){
             // TODO
+            System.out.println("select");
         } else if(action.equals(button_readArduino.getActionCommand())){
             // TODO
         } // TODO add more
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        System.out.println("123");
+        if(o instanceof IoTmodel && arg instanceof String){
+            comboBox_comPorts.addItem((String)arg);
+        }
     }
 }
