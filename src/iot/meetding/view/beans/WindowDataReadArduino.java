@@ -6,9 +6,8 @@ import java.util.Observable;
  * A holder for data for Data reading window
  */
 public class WindowDataReadArduino extends Observable {
-    private String logData;
-
-    private boolean appendCSV;
+    private String logData; // log for user to see data
+    private boolean appendCSV; // append data to csv or not
     public WindowDataReadArduino() {
         logData = "";
         appendCSV = false;
