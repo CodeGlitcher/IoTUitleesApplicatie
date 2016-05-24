@@ -1,6 +1,7 @@
 package iot.meetding.view;
 
 import iot.meetding.model.IoTmodel;
+import iot.meetding.view.beans.WindowDataReadArduino;
 
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
@@ -16,7 +17,7 @@ import java.util.Set;
  */
 public class MainWindow extends JFrame implements ActionListener, Observer {
 
-
+    // Generated code. Should not be changed
     private JTabbedPane tabbedPane1;
     private JComboBox<String> comboBox_comPorts;
     private JButton button_readArduino;
@@ -25,69 +26,63 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     private JPanel main;
     private JTextArea textArea_output;
     private JScrollPane scrollPane_scrollTextArea;
+    private JCheckBox checkBox_appendCSV;
+
+
 
     private IoTmodel model;
+    private WindowDataReadArduino data_read_window;
 
     public MainWindow() {
+        data_read_window = new WindowDataReadArduino();
+        data_read_window.addObserver(this);
         model = IoTmodel.getInstance();
         model.addObserver(this);
         setContentPane(main);
         setSize(500,500);
+
+        // set auto scroll of output
         DefaultCaret caret = (DefaultCaret)textArea_output.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        // setup action listeners
         button_refresh.addActionListener(this);
-        comboBox_comPorts.addActionListener(this);
+        button_readArduino.addActionListener(this);
+        checkBox_appendCSV.addActionListener(this);
+
+        // if window is closed, end application (default is hide window)
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
     }
-
-    private void resetComPorts() {
-        comboBox_comPorts.removeAllItems();
-        Set<String> ports = null;
-        for(String port : ports){
-            comboBox_comPorts.addItem(port);
-        }
-    }
-
-
-
-    public void setData(SerialOut data) {
-        textArea_output.append(data.getText() + "\n");
-
-    }
-
-    public void getData(SerialOut data) {
-        data.setText(textArea_output.getText());
-    }
-
-    public boolean isModified(SerialOut data) {
-        return data.getText().equals(textArea_output.getText());
-    }
-
 
     /**
      * Handle actions
      *
-     * @param e
+     * @param e, ActionEvent
      */
     @Override
     public void actionPerformed(ActionEvent e) {
         String action = e.getActionCommand();
         if(action.equals(button_refresh.getActionCommand())){
+            data_read_window.clearLogData();
             comboBox_comPorts.removeAllItems();
-            model.updateComPorts();
-        } else if (action.equals(comboBox_comPorts.getActionCommand())){
-            // TODO
-            System.out.println("select");
+            model.updateComPorts(data_read_window);
         } else if(action.equals(button_readArduino.getActionCommand())){
-            // TODO
-        } // TODO add more
+            data_read_window.clearLogData();
+            model.startReadData((String)comboBox_comPorts.getSelectedItem(), data_read_window);
+        }else if (action.equals(checkBox_appendCSV.getActionCommand())){
+            data_read_window.setAppendCSV(checkBox_appendCSV.isSelected());
+        }
     }
 
+    // update to data
     @Override
     public void update(Observable o, Object arg) {
-        System.out.println("123");
+        if(o instanceof WindowDataReadArduino){
+            textArea_output.setText(((WindowDataReadArduino) o).getLogData());
+        }
         if(o instanceof IoTmodel && arg instanceof String){
             comboBox_comPorts.addItem((String)arg);
         }
+
     }
 }

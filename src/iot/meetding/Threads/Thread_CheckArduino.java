@@ -1,7 +1,9 @@
-package iot.meetding;
+package iot.meetding.Threads;
 
+import iot.meetding.ArduinoSerialPort;
+import iot.meetding.Logger;
 import iot.meetding.model.IoTmodel;
-import jssc.SerialPort;
+import iot.meetding.view.beans.WindowDataReadArduino;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
 import jssc.SerialPortException;
@@ -11,15 +13,18 @@ import jssc.SerialPortException;
  *
  */
 public class Thread_CheckArduino extends Thread implements SerialPortEventListener {
-    private final int TIME_OUT = 15000;
-    private final int ARDUINO_BOOT_TIME = 2000;
+    private final int TIME_OUT = 10000;
+    private final int ARDUINO_BOOT_TIME = 3000;
     private boolean isArduino = false;
+    private WindowDataReadArduino data;
     private ArduinoSerialPort port;
-    public Thread_CheckArduino(ArduinoSerialPort port) throws SerialPortException {
-        if(!port.isOpened()){
+
+    public Thread_CheckArduino(ArduinoSerialPort port, WindowDataReadArduino data) throws SerialPortException {
+        if (!port.isOpened()) {
             port.openPort();
 
         }
+        this.data = data;
         this.port = port;
     }
 
@@ -27,29 +32,30 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
     public void run() {
         super.run();
         try {
-            sleep(ARDUINO_BOOT_TIME);
-            Logger.log("Sending request");
             port.addEventListener(this);
-            port.writeInt(ArduinoSerialPort.MESSAGE_IS_ARDUINO);
-            port.writeByte(ArduinoSerialPort.DELIMITER);
+            sleep(ARDUINO_BOOT_TIME);
+            data.appendLogData("Sending request");
+            port.writeString(ArduinoSerialPort.MESSAGE_IS_ARDUINO);
             sleep(TIME_OUT);
-
         } catch (SerialPortException exception) {
             Logger.log(exception.getMessage());
         } catch (InterruptedException interrupt) {
-            Logger.log("Got answer from arduino");
+            data.appendLogData("Got answer from com port");
         }
 
         try {
             if (isArduino) {
                 IoTmodel.getInstance().addPort(port);
+                data.appendLogData("Arduino found");
                 port.removeEventListener();
             } else {
-                System.out.println("CLose");
+                data.appendLogData("Close port");
                 port.closePort();
             }
         } catch (SerialPortException e) {
             Logger.log(e.getMessage());
+        } finally {
+            IoTmodel.getInstance().closeThread();
         }
     }
 
@@ -60,11 +66,13 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
             try {
                 String receivedData = port.readString(event.getEventValue());
                 receivedData = receivedData.trim();
-                System.out.println(receivedData);
-                isArduino = receivedData.equals(ArduinoSerialPort.ANSWER_IS_ARDUINO +"");
-                interrupt();
+                isArduino = receivedData.equals(ArduinoSerialPort.ANSWER_IS_ARDUINO) || isArduino;
+                if (isArduino) {
+                    Logger.log("Arduino found on: " + port.getPortName());
+                    interrupt();
+                }
             } catch (SerialPortException ex) {
-                Logger.log("Error in receiving data from " + port.getPortName()+": " + ex.getMessage());
+                Logger.log("Error in receiving data from " + port.getPortName() + ": " + ex.getMessage());
             }
         }
     }
