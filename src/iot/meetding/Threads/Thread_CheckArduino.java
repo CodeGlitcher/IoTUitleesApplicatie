@@ -66,6 +66,7 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
             try {
                 String receivedData = port.readString(event.getEventValue());
                 receivedData = receivedData.trim();
+                data.appendLogData(receivedData);
                 isArduino = receivedData.equals(ArduinoSerialPort.ANSWER_IS_ARDUINO) || isArduino;
                 if (isArduino) {
                     Logger.log("Arduino found on: " + port.getPortName());

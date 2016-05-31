@@ -8,6 +8,8 @@ import java.util.Observable;
 public class WindowDataReadArduino extends Observable {
     private String logData; // log for user to see data
     private boolean appendCSV; // append data to csv or not
+    private int fileSize;
+    private int progress = 0;
     public WindowDataReadArduino() {
         logData = "";
         appendCSV = false;
@@ -38,6 +40,25 @@ public class WindowDataReadArduino extends Observable {
 
     public void setAppendCSV(boolean append){
         this.appendCSV = append;
+        change();
+    }
+
+    public void setFileSize(int fileSize) {
+        this.fileSize = fileSize;
+        change();
+    }
+    public int getFileSize(){
+        return this.fileSize;
+    }
+    public void addProgress(int progress){
+        this.progress += progress;
+        change();
+    }
+    public int getProgress(){
+        return this.progress;
+    }
+    public void resetProgress(){
+        this.progress = 0;
         change();
     }
 }

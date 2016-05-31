@@ -2,6 +2,8 @@ package iot.meetding;
 
 import iot.meetding.model.IoTmodel;
 import iot.meetding.view.MainWindow;
+import javafx.stage.FileChooser;
+import javafx.stage.Window;
 
 import java.io.File;
 
@@ -17,6 +19,15 @@ public class Main {
                 IoTmodel.getInstance().removeAllPorts();
             }
         }));
+
+
+        FileChooser fileChooser = new FileChooser();
+
+//Set extension filter
+
+//Show open file dialog
+
+
     }
 }
 

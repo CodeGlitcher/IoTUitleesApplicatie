@@ -1,10 +1,14 @@
 package iot.meetding.view;
 
+import iot.meetding.controller.ListConfigRender;
 import iot.meetding.model.IoTmodel;
+import iot.meetding.view.beans.ConfigItem;
+import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.beans.WindowDataReadArduino;
 
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
@@ -18,17 +22,17 @@ import java.util.Set;
 public class MainWindow extends JFrame implements ActionListener, Observer {
 
     // Generated code. Should not be changed
-    private JTabbedPane tabbedPane1;
     private JComboBox<String> comboBox_comPorts;
     private JButton button_readArduino;
     private JProgressBar progressbar_status;
     private JButton button_refresh;
     private JPanel main;
     private JTextArea textArea_output;
-    private JScrollPane scrollPane_scrollTextArea;
     private JCheckBox checkBox_appendCSV;
-
-
+    private JTabbedPane mainPanel;
+    private JScrollPane scrollPane_scrollTextArea;
+    private ConfigurationPanel p;
+    private JPanel t;
 
     private IoTmodel model;
     private WindowDataReadArduino data_read_window;
@@ -78,11 +82,15 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     @Override
     public void update(Observable o, Object arg) {
         if(o instanceof WindowDataReadArduino){
-            textArea_output.setText(((WindowDataReadArduino) o).getLogData());
+
+            textArea_output.setText(data_read_window.getLogData());
+            progressbar_status.setMaximum(data_read_window.getFileSize());
+            progressbar_status.setValue(data_read_window.getProgress());
         }
         if(o instanceof IoTmodel && arg instanceof String){
             comboBox_comPorts.addItem((String)arg);
         }
 
     }
+
 }
