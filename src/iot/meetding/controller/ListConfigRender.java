@@ -9,6 +9,7 @@ import java.awt.*;
 
 /**
  * Created by Rob on 29-5-2016.
+ *
  */
 public class ListConfigRender implements ListCellRenderer<ConfigItem> {
     @Override
@@ -16,4 +17,7 @@ public class ListConfigRender implements ListCellRenderer<ConfigItem> {
         Logger.log("hoi " + index);
         return new ListQuestion().test(index);
     }
+
+
+
 }

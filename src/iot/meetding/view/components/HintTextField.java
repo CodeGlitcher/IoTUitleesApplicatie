@@ -2,18 +2,30 @@ package iot.meetding.view.components;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.ParseException;
 
 public class HintTextField extends JTextField {
-    public HintTextField(String hint) {
+
+    private final String _hint;
+
+
+    public HintTextField(String hint, InputVerifier v){
         _hint = hint;
+        setInputVerifier(v);
     }
+    public HintTextField(String hint){
+        _hint = hint;
+        setToolTipText(hint);
+    }
+
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
         if (getText().length() == 0) {
             System.out.println("Hint Text!!");
             int h = getHeight();
-            ((Graphics2D)g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             Insets ins = getInsets();
             FontMetrics fm = g.getFontMetrics();
             int c0 = getBackground().getRGB();
@@ -24,5 +36,15 @@ public class HintTextField extends JTextField {
             g.drawString(_hint, ins.left, h / 2 + fm.getAscent() / 2 - 2);
         }
     }
-    private final String _hint;
+
+
+    @Override
+    public String getToolTipText() {
+        String tooltip = super.getToolTipText();
+        if (tooltip == null || tooltip.isEmpty()) {
+            return _hint;
+        }
+        return super.getToolTipText();
+    }
 }
+
