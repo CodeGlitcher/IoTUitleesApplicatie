@@ -29,7 +29,6 @@ public class ConfigurationPanel extends JPanel {
     private JCheckBox checkbox_sunday;
     private JList list_questions;
     private JButton vraagToevoegenButton;
-    private JButton button1;
 
     private void createUIComponents() {
         // TODO: place custom component creation code here
