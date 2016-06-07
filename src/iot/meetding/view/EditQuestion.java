@@ -1,12 +1,25 @@
 package iot.meetding.view;
 
+import iot.meetding.view.components.HintTextField;
+
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.*;
 
 public class EditQuestion extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
+    private HintTextField textField_QuestionPart1;
+    private JList list1;
+    private HintTextField textField_QuestionPart2;
+    private HintTextField textField_QuestionPart3;
+    private HintTextField textField_QuestionPart4;
+    private JLabel label_Qeustion1;
+    private JLabel label_Question2;
+    private JLabel label_Qeustion3;
+    private JLabel label_Question4;
+    private JButton buttton_AddAnswer;
 
     public EditQuestion() {
         setContentPane(contentPane);
@@ -57,4 +70,9 @@ public class EditQuestion extends JDialog {
         dialog.setVisible(true);
         System.exit(0);
     }
+
+    private void createUIComponents() {
+        // TODO: place custom component creation code here
+    }
+
 }

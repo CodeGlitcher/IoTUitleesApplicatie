@@ -1,8 +1,9 @@
-package iot.meetding.view;
+package iot.meetding.view.components;
 
 import iot.meetding.view.beans.ConfigQuestion;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
@@ -10,7 +11,6 @@ import java.util.Observer;
 
 /**
  * Created by Rob on 29-5-2016.
- *
  */
 public class ListQuestion implements ActionListener, Observer {
     private JButton bewerkButton;
@@ -26,9 +26,9 @@ public class ListQuestion implements ActionListener, Observer {
         question.addObserver(this);
 
 
-
     }
-    public JPanel getPanel(){
+
+    public JPanel getPanel() {
         return panel;
     }
 
@@ -41,4 +41,5 @@ public class ListQuestion implements ActionListener, Observer {
     public void update(Observable o, Object arg) {
 
     }
+
 }

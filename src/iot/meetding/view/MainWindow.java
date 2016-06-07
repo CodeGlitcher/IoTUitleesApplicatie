@@ -17,7 +17,6 @@ import java.util.Set;
 
 /**
  * Created by Rob on 13-5-2016.
- *
  */
 public class MainWindow extends JFrame implements ActionListener, Observer {
 
@@ -43,10 +42,10 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
         model = IoTmodel.getInstance();
         model.addObserver(this);
         setContentPane(main);
-        setSize(500,500);
+        setSize(500, 500);
 
         // set auto scroll of output
-        DefaultCaret caret = (DefaultCaret)textArea_output.getCaret();
+        DefaultCaret caret = (DefaultCaret) textArea_output.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
         // setup action listeners
         button_refresh.addActionListener(this);
@@ -66,14 +65,14 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     @Override
     public void actionPerformed(ActionEvent e) {
         String action = e.getActionCommand();
-        if(action.equals(button_refresh.getActionCommand())){
+        if (action.equals(button_refresh.getActionCommand())) {
             data_read_window.clearLogData();
             comboBox_comPorts.removeAllItems();
             model.updateComPorts(data_read_window);
-        } else if(action.equals(button_readArduino.getActionCommand())){
+        } else if (action.equals(button_readArduino.getActionCommand())) {
             data_read_window.clearLogData();
-            model.startReadData((String)comboBox_comPorts.getSelectedItem(), data_read_window);
-        }else if (action.equals(checkBox_appendCSV.getActionCommand())){
+            model.startReadData((String) comboBox_comPorts.getSelectedItem(), data_read_window);
+        } else if (action.equals(checkBox_appendCSV.getActionCommand())) {
             data_read_window.setAppendCSV(checkBox_appendCSV.isSelected());
         }
     }
@@ -81,14 +80,14 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     // update to data
     @Override
     public void update(Observable o, Object arg) {
-        if(o instanceof WindowDataReadArduino){
+        if (o instanceof WindowDataReadArduino) {
 
             textArea_output.setText(data_read_window.getLogData());
             progressbar_status.setMaximum(data_read_window.getFileSize());
             progressbar_status.setValue(data_read_window.getProgress());
         }
-        if(o instanceof IoTmodel && arg instanceof String){
-            comboBox_comPorts.addItem((String)arg);
+        if (o instanceof IoTmodel && arg instanceof String) {
+            comboBox_comPorts.addItem((String) arg);
         }
 
     }
