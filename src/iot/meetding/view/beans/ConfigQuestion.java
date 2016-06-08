@@ -22,14 +22,17 @@ public class ConfigQuestion extends Observable {
         questionID++;
 
         question = new String[5];
-        question[0] = "hello";
-        question[1] = "hello";
-        question[2] = "hello";
-        question[3] = "hello";
-        question[4] = "hello";
+        question[0] = "Dit is een";
+        question[1] = "voor-";
+        question[2] = "beeld";
+        question[3] = ".";
+        question[4] = "";
         answers = new ArrayList<>();
         deleted = false;
     }
+
+
+
 
     public String getKey(){
         return "vraag: " + key;
@@ -45,6 +48,8 @@ public class ConfigQuestion extends Observable {
 
     public void delete(){
         deleted = true;
+        setChanged();
+        notifyObservers();
     }
 
     public Boolean isDeleted(){

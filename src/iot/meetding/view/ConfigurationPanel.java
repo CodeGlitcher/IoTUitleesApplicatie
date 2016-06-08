@@ -39,7 +39,6 @@ public class ConfigurationPanel extends JPanel implements ActionListener {
     private JList<ConfigQuestion> list_questions;
     private JButton button_AddQuestion;
     private JButton button_Save;
-    private JTable table_Qeustion;
 
     private IoTmodel model;
 

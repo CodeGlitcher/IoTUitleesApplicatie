@@ -21,7 +21,6 @@ public class Main {
         }));
 
 
-        FileChooser fileChooser = new FileChooser();
 
 //Set extension filter
 

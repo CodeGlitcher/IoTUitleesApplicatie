@@ -30,7 +30,6 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     private JCheckBox checkBox_appendCSV;
     private JTabbedPane mainPanel;
     private JScrollPane scrollPane_scrollTextArea;
-    private ConfigurationPanel p;
     private JPanel t;
 
     private IoTmodel model;

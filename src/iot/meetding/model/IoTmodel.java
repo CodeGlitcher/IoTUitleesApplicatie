@@ -7,17 +7,19 @@ import iot.meetding.Threads.Thread_ReadData;
 import iot.meetding.view.beans.ConfigItem;
 import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.beans.WindowDataReadArduino;
+import javafx.beans.*;
 import jssc.*;
 
 import javax.security.auth.login.Configuration;
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.Observable;
 
 /**
  * Created by Rob on 18-5-2016.
  *
  */
-public class IoTmodel extends Observable {
+public class IoTmodel extends Observable implements Observer {
 
     private static IoTmodel model;
 
@@ -39,9 +41,12 @@ public class IoTmodel extends Observable {
         ports = new TreeMap<>();
 
         questions = new ArrayList<>();
-        questions.add(new ConfigQuestion());
-        questions.add(new ConfigQuestion());
-        questions.add(new ConfigQuestion());
+
+        createQuestion();
+        createQuestion();
+        createQuestion();
+
+        // static config
         startTime = new ConfigItem<>("StartTime", 0);
         endTime = new ConfigItem<>("EndTime", 0);
         timeRangeMeasure = new ConfigItem<>("Measure", 0);
@@ -61,6 +66,16 @@ public class IoTmodel extends Observable {
             model = new IoTmodel();
         }
         return model;
+    }
+
+
+    public ConfigQuestion createQuestion(){
+        ConfigQuestion q = new ConfigQuestion();
+        q.addObserver(this);
+        setChanged();
+        notifyObservers();
+        this.questions.add(q);
+        return q;
     }
 
     /**
@@ -178,6 +193,25 @@ public class IoTmodel extends Observable {
         return timeRangeQuestion;
     }
 
+    public void addQuestion(ConfigQuestion configQuestion) {
+        this.questions.add(configQuestion);
+        setChanged();
+        notifyObservers();
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+        System.out.print("update");
+        if(o instanceof ConfigQuestion){
+            System.out.print("update2");
+            if(((ConfigQuestion) o).isDeleted()){
+                System.out.print("updat3e");
+                questions.remove(o);
+            }
+        }
+        setChanged();
+        notifyObservers();
+    }
 }
 
 

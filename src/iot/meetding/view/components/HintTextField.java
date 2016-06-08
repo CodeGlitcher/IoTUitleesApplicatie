@@ -23,7 +23,6 @@ public class HintTextField extends JTextField {
     public void paint(Graphics g) {
         super.paint(g);
         if (getText().length() == 0) {
-            System.out.println("Hint Text!!");
             int h = getHeight();
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
             Insets ins = getInsets();
@@ -38,13 +37,5 @@ public class HintTextField extends JTextField {
     }
 
 
-    @Override
-    public String getToolTipText() {
-        String tooltip = super.getToolTipText();
-        if (tooltip == null || tooltip.isEmpty()) {
-            return _hint;
-        }
-        return super.getToolTipText();
-    }
 }
 
