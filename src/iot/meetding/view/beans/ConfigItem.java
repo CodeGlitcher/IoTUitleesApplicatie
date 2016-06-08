@@ -6,17 +6,17 @@ import java.util.Observable;
  * Created by Rob on 29-5-2016.
  *
  */
-public abstract class ConfigItem extends Observable {
+public class ConfigItem<x> extends Observable {
 
-    public enum Type {question, integer }
-    protected int key;
-    private Type type;
+    private String key;
+    private x value;
 
-    public ConfigItem(Type t, int key){
-        this.type = t;
+    public ConfigItem(String key, x value){
         this.key = key;
+        this.value = value;
     }
-    public void changed(){
+
+    private void changed(){
         setChanged();
         notifyObservers();
     }
@@ -24,5 +24,18 @@ public abstract class ConfigItem extends Observable {
         setChanged();
         notifyObservers(arg);
     }
+
+    public x getValue(){
+        return value;
+    }
+    public void setValue(x value) {
+        this.value = value;
+        changed();
+    }
+
+    public String getKey(){
+        return key;
+    }
+
 
 }

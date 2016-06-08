@@ -4,9 +4,13 @@ import iot.meetding.ArduinoSerialPort;
 import iot.meetding.Logger;
 import iot.meetding.Threads.Thread_CheckArduino;
 import iot.meetding.Threads.Thread_ReadData;
+import iot.meetding.view.beans.ConfigItem;
+import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.beans.WindowDataReadArduino;
 import jssc.*;
 
+import javax.security.auth.login.Configuration;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -20,9 +24,36 @@ public class IoTmodel extends Observable {
     private TreeMap<String,ArduinoSerialPort> ports;
     private  Thread t;
     private int threadCounter = 0;
-    private IoTmodel(){
+
+
+    private ArrayList<ConfigQuestion> questions;
+    private ConfigItem<Integer> endTime;
+    private ConfigItem<Integer> startTime;
+    private ConfigItem<Integer> timeRangeMeasure;
+    private ConfigItem<Integer> timeRangeQuestion;
+    private ArrayList<ConfigItem<Boolean>> days;
+
+
+    private IoTmodel() {
 
         ports = new TreeMap<>();
+
+        questions = new ArrayList<>();
+        questions.add(new ConfigQuestion());
+        questions.add(new ConfigQuestion());
+        questions.add(new ConfigQuestion());
+        startTime = new ConfigItem<>("StartTime", 0);
+        endTime = new ConfigItem<>("EndTime", 0);
+        timeRangeMeasure = new ConfigItem<>("Measure", 0);
+        timeRangeQuestion = new ConfigItem<>("QuestionTime", 0);
+        days = new ArrayList<>();
+        days.add(new ConfigItem<>("ma", false));
+        days.add(new ConfigItem<>("di", false));
+        days.add(new ConfigItem<>("wo", false));
+        days.add(new ConfigItem<>("do", false));
+        days.add(new ConfigItem<>("vr", false));
+        days.add(new ConfigItem<>("za", false));
+        days.add(new ConfigItem<>("zo", false));
     }
 
     public static IoTmodel getInstance(){
@@ -126,6 +157,27 @@ public class IoTmodel extends Observable {
             e.printStackTrace();
         }
     }
+
+
+    public ArrayList<ConfigQuestion> getQuestions(){
+        return questions;
+    }
+    public ConfigItem<Integer> getStartConfig(){
+        return startTime;
+    }
+    public ConfigItem<Integer> getEndConfig(){
+        return endTime;
+    }
+    public ArrayList<ConfigItem<Boolean>> getDayConfig(){
+        return days;
+    }
+    public ConfigItem<Integer> getMeasurementsConfig(){
+        return timeRangeMeasure;
+    }
+    public ConfigItem<Integer> getQuestionConfig(){
+        return timeRangeQuestion;
+    }
+
 }
 
 

@@ -13,10 +13,12 @@ import java.util.Observer;
  * Created by Rob on 29-5-2016.
  */
 public class ListQuestion implements ActionListener, Observer {
-    private JButton bewerkButton;
+    private JButton button_change;
     private JLabel key;
-    private JButton button1;
+    private JButton button_remove;
     private JPanel panel;
+    private JLabel textField_question;
+    private JTextField textField1;
 
 
     private ConfigQuestion question;
@@ -25,7 +27,8 @@ public class ListQuestion implements ActionListener, Observer {
         this.question = question;
         question.addObserver(this);
 
-
+        key.setText(question.getKey());
+        textField_question.setText(question.getQuestion());
     }
 
     public JPanel getPanel() {
@@ -39,7 +42,7 @@ public class ListQuestion implements ActionListener, Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-
+        textField_question.setText(question.getQuestion());
     }
 
 }

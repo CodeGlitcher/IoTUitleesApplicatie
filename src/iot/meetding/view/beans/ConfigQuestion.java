@@ -1,28 +1,42 @@
 package iot.meetding.view.beans;
 
+
+import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Observable;
 
 /**
  * Created by Rob on 29-5-2016.
  *
  */
-public class ConfigQuestion extends ConfigItem {
+public class ConfigQuestion extends Observable {
 
     private static int questionID = 0;
     private String[] question;
     private Boolean deleted;
     private ArrayList<String[]> answers;
+    private int key;
 
     public ConfigQuestion(){
-        super(Type.question, questionID);
+        key = questionID;
         questionID++;
+
         question = new String[5];
+        question[0] = "hello";
+        question[1] = "hello";
+        question[2] = "hello";
+        question[3] = "hello";
+        question[4] = "hello";
         answers = new ArrayList<>();
         deleted = false;
     }
 
+    public String getKey(){
+        return "vraag: " + key;
+    }
+
     public String getQuestion(){
-        return String.format("%s\n%s\n%s\n%s\n%s", question[0], question[1], question[2], question[3], question[4]);
+        return String.format("%s %s %s %s %s", question[0].trim(), question[1].trim(), question[2].trim(), question[3].trim(), question[4].trim());
     }
 
     public String getQeustionPart(int part){
@@ -36,15 +50,6 @@ public class ConfigQuestion extends ConfigItem {
     public Boolean isDeleted(){
         return deleted;
     }
-
-
-
-
-
-
-
-
-
 
 
 
