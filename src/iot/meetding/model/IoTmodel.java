@@ -201,11 +201,8 @@ public class IoTmodel extends Observable implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-        System.out.print("update");
         if(o instanceof ConfigQuestion){
-            System.out.print("update2");
             if(((ConfigQuestion) o).isDeleted()){
-                System.out.print("updat3e");
                 questions.remove(o);
             }
         }

@@ -41,16 +41,17 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
 
 
     public void createUIComponents() {
-        textField_IntervalTime = new HintTextField("Hoe vaak moet er gemeten worden? Laat leeg om geen intervalmetingen te donen.");
-        textField_intervalQuestion = new HintTextField("Hoeveel tijd moet er tussen bevragingen zitten");
+        textField_IntervalTime = new HintTextField("Hoe vaak moet er gemeten worden? Vul 0 in om geen intervalmetingen te donen.", new IntVerify());
+        textField_intervalQuestion = new HintTextField("Hoeveel tijd moet er tussen bevragingen zitten", new IntVerify());
         textField_StartTime = new HintTextField("Starttijd bevragingen en intervalmetingen (per uur)", new IntVerify());
         textField_EndTime = new HintTextField("Eindtijd bevragingen en intervalmetingen (per uur)", new IntVerify());
         IoTmodel.getInstance().addObserver(this);
 
     }
 
+
     public ConfigurationPanel_V2() {
-        tModel = new DefaultTableModel();
+        tModel = new QuestionTableModel();
         table_Qeustion.setModel(tModel);
         tModel.addColumn("ID");
         tModel.addColumn("Vraag");
@@ -62,24 +63,26 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         Action edit = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 int modelRow = Integer.valueOf(e.getActionCommand());
-                System.out.println(modelRow);
+                IoTmodel m = IoTmodel.getInstance();
+                EditQuestion dialog = new EditQuestion(m.getQuestions().get(modelRow));
+                dialog.pack();
+                dialog.setVisible(true);
             }
         };
 
         Action delete = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
-                System.out.println("hello");
                 int modelRow = Integer.valueOf(e.getActionCommand());
                 IoTmodel.getInstance().getQuestions().get(modelRow).delete();
             }
         };
-        table_Qeustion.getColumnModel().getColumn(0).setPreferredWidth(10);
+        table_Qeustion.getColumnModel().getColumn(0).setMaxWidth(50);
         table_Qeustion.getColumnModel().getColumn(1).setPreferredWidth(400);
-        table_Qeustion.getColumnModel().getColumn(2).setPreferredWidth(40);
-        table_Qeustion.getColumnModel().getColumn(3).setPreferredWidth(40);
+        table_Qeustion.getColumnModel().getColumn(2).setMaxWidth(80);
+        table_Qeustion.getColumnModel().getColumn(3).setMaxWidth(80);
 
-        ButtonColumn buttonColumn = new ButtonColumn(table_Qeustion, edit, 2);
-        ButtonColumn buttonColumn2 = new ButtonColumn(table_Qeustion, delete, 3);
+        new ButtonColumn(table_Qeustion, edit, 2);
+        new ButtonColumn(table_Qeustion, delete, 3);
 
         button_Save.addActionListener(this);
         fillUI();
@@ -125,14 +128,14 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         }
     }
 
-    private String[] createRow(ConfigQuestion q) {
-        String[] restult = new String[4];
+    private Object[] createRow(ConfigQuestion q) {
+        Object[] result = new Object[4];
 
-        restult[0] = q.getKey();
-        restult[1] = q.getQuestion();
-        restult[2] = "X";
-        restult[3] = "X";
-        return restult;
+        result[0] = q.getKey();
+        result[1] = q.getQuestion();
+        result[2] = new ImageIcon(getClass().getResource("/resource/config/pencil.png"));
+        result[3] = new ImageIcon(getClass().getResource("/resource/config/close.png"));
+        return result;
     }
 
     @Override
@@ -170,6 +173,13 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
                     break;
 
             }
+        }
+    }
+
+    private class QuestionTableModel extends DefaultTableModel{
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return column == 2 || column ==3;
         }
     }
 }

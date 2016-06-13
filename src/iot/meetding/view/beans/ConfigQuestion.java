@@ -33,6 +33,11 @@ public class ConfigQuestion extends Observable {
 
 
 
+    public void setQuestion(int partNr, String part){
+        question[partNr] = part;
+        setChanged();
+        notifyObservers();
+    }
 
     public String getKey(){
         return "vraag: " + key;
@@ -57,5 +62,14 @@ public class ConfigQuestion extends Observable {
     }
 
 
+    public ArrayList<String[]> getAnswers() {
 
+        return answers;
+    }
+
+    public void setAnswers(ArrayList<String[]> answers){
+        this.answers = answers;
+        setChanged();
+        notifyObservers();
+    }
 }
