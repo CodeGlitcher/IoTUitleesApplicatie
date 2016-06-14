@@ -3,6 +3,7 @@ package iot.meetding.Threads;
 
 import iot.meetding.ArduinoSerialPort;
 import iot.meetding.Logger;
+import iot.meetding.model.IoTmodel;
 import iot.meetding.view.beans.WindowDataReadArduino;
 import jssc.SerialPortEvent;
 import jssc.SerialPortEventListener;
@@ -25,7 +26,6 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
     private final int TIME_OUT = 15000;
     private final int ARDUINO_BOOT_TIME = 2000;
     private boolean isArduino = false;
-    private final String CSV_DIR = "Meetding";
 
     private int state = 0;
 
@@ -52,17 +52,7 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
         super.run();
         start = Calendar.getInstance();
         try {
-            // create file objects
-            String dir = String.format("%1$s%2$s%3$s", System.getProperty("user.home"), File.separator,CSV_DIR);
-            File f = new File(dir);
-            // create storage directory
-            if(!f.exists()){
-                data.appendLogData("Creating directory");
-                if(!f.mkdirs()){
-                    data.appendLogData("Cannot create directory");
-                    return;
-                }
-            }
+            File f = IoTmodel.getInstance().getDataDir();
             File csv = new File(f, "data.csv");
             fileExist = csv.exists();
             // rename old file to prevent data loss
@@ -147,7 +137,6 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
 
                 // write data to file
                 stream.write(buff);
-
             } catch (SerialPortException ex) {
                 Logger.log("Error in receiving data from " + port.getPortName()+": " + ex.getMessage());
                 done = true;// something went wrong stop this thread.

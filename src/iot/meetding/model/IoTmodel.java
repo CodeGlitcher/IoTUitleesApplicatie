@@ -7,11 +7,14 @@ import iot.meetding.Threads.Thread_ReadData;
 import iot.meetding.view.beans.ConfigItem;
 import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.beans.WindowDataReadArduino;
-import javafx.beans.*;
-import jssc.*;
+import jssc.SerialPortException;
+import jssc.SerialPortList;
+import org.ini4j.Ini;
+import org.ini4j.Profile;
 
-import javax.security.auth.login.Configuration;
-import java.lang.reflect.Array;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 import java.util.Observable;
 
@@ -21,6 +24,7 @@ import java.util.Observable;
  */
 public class IoTmodel extends Observable implements Observer {
 
+    private final String DATA_DIR = "Klimaatscanner";
     private static IoTmodel model;
 
     private TreeMap<String,ArduinoSerialPort> ports;
@@ -42,9 +46,9 @@ public class IoTmodel extends Observable implements Observer {
 
         questions = new ArrayList<>();
 
-        createQuestion();
-        createQuestion();
-        createQuestion();
+        readQuestion();
+        readQuestion();
+        readQuestion();
 
         // static config
         startTime = new ConfigItem<>("StartTime", 0);
@@ -69,7 +73,7 @@ public class IoTmodel extends Observable implements Observer {
     }
 
 
-    public ConfigQuestion createQuestion(){
+    public ConfigQuestion readQuestion(){
         ConfigQuestion q = new ConfigQuestion();
         q.addObserver(this);
         setChanged();
@@ -208,6 +212,182 @@ public class IoTmodel extends Observable implements Observer {
         }
         setChanged();
         notifyObservers();
+    }
+
+
+
+    public ArrayList<byte[]> createConfigFile(){
+        ArrayList<byte[]> result = new ArrayList<>();
+        addQuestions(result);
+
+        addConfig(result);
+
+        for(byte[] buffer : result){
+            System.out.print(new String(buffer));
+        }
+
+
+        return result;
+    }
+
+
+    /**
+     * Add config to an arraylist of bytes
+     * @param result
+     */
+    public void addConfig(ArrayList<byte[]> result){
+        // time config
+        result.add("[tijden]\n".getBytes());
+
+        result.add(String.format("begintijd=%d\n", startTime.getValue()).getBytes());
+        result.add(String.format("eindtijd=%d\n", endTime.getValue()).getBytes());
+        result.add(String.format("vraaginterval=%d\n", timeRangeQuestion.getValue()).getBytes());
+        result.add(String.format("sensorinterval=%d\n", timeRangeMeasure.getValue()).getBytes());
+        result.add("\n".getBytes());
+
+        // day config
+        result.add("[dagen]\n".getBytes());
+        for(ConfigItem<Boolean> day : days){
+            result.add(String.format("%s=%b\n", day.getKey(), day.getValue()).getBytes());
+        }
+    }
+
+    /**
+     * Add questions to an arraylist of bytes
+     * @param result Arraylist for result
+     */
+    public void addQuestions(ArrayList<byte[]> result){
+        for(int i = 0; i<questions.size();i++){
+            ConfigQuestion question = questions.get(i);
+            result.add(String.format("[vraag%d]\n", i).getBytes());
+
+            String[] parts = question.getQuestionParts();
+            for(int x = 0; x<parts.length; x++){
+                result.add(String.format("vraag_deel%d=%s\n", x, parts[x]).getBytes());
+            }
+
+            ArrayList<String[]> answers = question.getAnswers();
+            for(int y =0; y<answers.size();y++){
+                String[] answerParts = answers.get(y);
+
+                for(int z = 0; z<answerParts.length; z++){
+                    result.add(String.format("antwoord%d_deel%d=%s\n", y,z, answerParts[z]).getBytes());
+                }
+
+            }
+            result.add("\n".getBytes());
+
+
+
+        }
+    }
+
+    /**
+     *
+     * @return File
+     */
+    public File getDataDir() throws IOException {
+        // create file objects
+        String dir = String.format("%1$s%2$s%3$s", System.getProperty("user.home"), File.separator, DATA_DIR);
+        File f = new File(dir);
+        // create storage directory
+        if(!f.exists()){
+            if(!f.mkdirs()){
+                throw new IOException("IO exception, cannot create directory");
+            }
+        }
+        return f;
+    }
+
+
+    /**
+     *
+     * @return File
+     */
+    public File getConfigDir() throws IOException {
+        File f = getDataDir();
+        File configDir = new File(f, "config");
+        // create storage directory
+        if(!configDir.exists()){
+            if(!configDir.mkdirs()){
+                throw new IOException("IO exception, cannot create directory");
+            }
+        }
+        return configDir;
+    }
+
+
+
+    public void readConfig(File config){
+
+        if(!config.exists()){
+            return;
+        }
+
+        questions.clear();
+
+        try {
+            Ini ini = new Ini();
+            ini.load(new FileReader(config));
+
+            for(String section : ini.keySet()){
+                System.out.println(section);
+                if(section.startsWith("vraag")){
+                    readQuestion(ini.get(section));
+                } else if (section.equals("tijden")) {
+                    readTimeConfig(ini.get(section));
+                } else if (section.equals("dagen")){
+                    readDayConfig(ini.get(section));
+                } else {
+                    //
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void readDayConfig(Profile.Section section) {
+        for(String key : section.keySet()){
+            for(ConfigItem<Boolean> day : days){
+                if(day.getKey().equals(key)){
+                    day.setValue(Boolean.parseBoolean(section.get(key)));
+                    break;
+                }
+            }
+        }
+    }
+
+    private void readTimeConfig(Profile.Section s) {
+        startTime.setValue(Integer.parseInt(s.get("begintijd")));
+        endTime.setValue(Integer.parseInt(s.get("eindtijd")));
+        timeRangeMeasure.setValue(Integer.parseInt(s.get("sensorinterval")));
+        timeRangeQuestion.setValue(Integer.parseInt(s.get("vraaginterval")));
+    }
+
+    private void readQuestion(Profile.Section section){
+        ConfigQuestion question = readQuestion();
+        ArrayList<String[]> answers = new ArrayList<>();
+
+        for(String key : section.keySet()){
+            if(key.startsWith("vraag_deel")){
+                String num = key.substring(key.length()-1);
+                System.out.println(key + "/" + section.get(key));
+                question.setQuestion(Integer.parseInt(num), section.get(key));
+
+            } else if (key.startsWith("antwoord")) {
+
+                int answerNumb, answerPart;
+                answerNumb = Integer.parseInt(key.substring(8, key.indexOf("_")));
+                answerPart = Integer.parseInt(key.substring(key.length() - 1));
+                while(answers.size() < answerNumb+1){
+                    answers.add(new String[3]);
+                }
+                answers.get(answerNumb)[answerPart] = section.get(key);
+            }
+        }
+        question.setAnswers(answers);
     }
 }
 

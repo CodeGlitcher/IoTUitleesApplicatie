@@ -111,7 +111,7 @@ public class EditQuestion extends JDialog {
             }
         };
         // add button to table
-        new ButtonColumnRow3(table_answers, delete, 1);
+        new ButtonColumnRow3(table_answers, delete, 2);
 
         // if a cell value changes, recalculate row length
         tModel.addTableModelListener(new TableModelListener() {
@@ -130,16 +130,14 @@ public class EditQuestion extends JDialog {
                 // the cell and you need column to tell what to update.
                 String newValue = String.format("(%d/%d)",result.length(), MAX_LENGTH);
                 String curr = table_answers.getValueAt(row, 2).toString();
-
+                // setting the value will trigger a new update event.
+                // only set value when it is different to prevent stackoverflow error
                 if(!newValue.equals(curr)){
-                    tModel.setValueAt(newValue, row , 2 );
+                    tModel.setValueAt(newValue, row , 1 );
                 }
             }
         });
-
-
-
-
+        table_answers.getTableHeader().setReorderingAllowed(false);
         table_answers.getColumnModel().getColumn(0).setPreferredWidth(150);
         table_answers.getColumnModel().getColumn(1).setPreferredWidth(50);
         table_answers.getColumnModel().getColumn(2).setPreferredWidth(50);
@@ -184,20 +182,20 @@ public class EditQuestion extends JDialog {
         Object[] row = new Object[3];
         row[0] = answer[0];
 
-        row[1] = new ImageIcon(getClass().getResource("/resource/config/close.png"));
-        row[2] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
+        row[1] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
+        row[2] = new ImageIcon(getClass().getResource("/resource/config/close.png"));
         tModel.addRow(row);
 
         row = new Object[3];
         row[0] = answer[1];
-        row[1] = null;
-        row[2] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
+        row[1] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
+        row[2] = null;
         tModel.addRow(row);
 
         row = new Object[3];
         row[0] = answer[2];
-        row[1] = null;
-        row[2] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
+        row[1] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
+        row[2] = null;
         tModel.addRow(row);
 
 
@@ -295,7 +293,7 @@ public class EditQuestion extends JDialog {
          */
         @Override
         public boolean isCellEditable(int row, int column){
-            return column == 0 || column == 1 && row % 3 == 0;
+            return column == 0 || column == 2 && row % 3 == 0;
         }
 
     }

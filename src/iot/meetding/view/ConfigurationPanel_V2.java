@@ -11,6 +11,9 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -80,6 +83,7 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         table_Qeustion.getColumnModel().getColumn(1).setPreferredWidth(400);
         table_Qeustion.getColumnModel().getColumn(2).setMaxWidth(80);
         table_Qeustion.getColumnModel().getColumn(3).setMaxWidth(80);
+        table_Qeustion.getTableHeader().setReorderingAllowed(false);
 
         new ButtonColumn(table_Qeustion, edit, 2);
         new ButtonColumn(table_Qeustion, delete, 3);
@@ -140,8 +144,39 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        IoTmodel.getInstance().createQuestion();
+        IoTmodel.getInstance().readQuestion();
         updateModel();
+        String action = e.getActionCommand();
+        if(action.equals(button_Save.getActionCommand())){
+            saveConfig();
+        }
+    }
+
+
+    private void saveConfig() {
+        try{
+            IoTmodel model = IoTmodel.getInstance();
+            File configDir = model.getConfigDir();
+
+            File configFile = new File(configDir, "local_config.ini");
+
+            FileOutputStream stream = new FileOutputStream(configFile);
+
+            ArrayList<byte[]> configData = model.createConfigFile();
+            for(byte[] buff : configData){
+                stream.write(buff);
+            }
+            stream.flush();
+            stream.close();
+
+
+        } catch (Exception e){
+            JOptionPane.showMessageDialog(null, "Opslaan mislukt\n\n"+e.getMessage());
+        }
+
+
+
+
     }
 
 

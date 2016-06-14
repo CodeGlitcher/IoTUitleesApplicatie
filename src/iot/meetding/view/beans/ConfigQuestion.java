@@ -21,13 +21,18 @@ public class ConfigQuestion extends Observable {
         key = questionID;
         questionID++;
 
-        question = new String[5];
+        question = new String[4];
         question[0] = "Dit is een";
         question[1] = "voor-";
         question[2] = "beeld";
         question[3] = ".";
-        question[4] = "";
         answers = new ArrayList<>();
+
+        String[] answer = new String[3];
+        answer[0] = "1";
+        answer[1] = "2";
+        answer[2] = "3";
+        answers.add(answer);
         deleted = false;
     }
 
@@ -40,13 +45,16 @@ public class ConfigQuestion extends Observable {
     }
 
     public String getKey(){
-        return "vraag: " + key;
+        return "#: " + key;
     }
 
     public String getQuestion(){
-        return String.format("%s %s %s %s %s", question[0].trim(), question[1].trim(), question[2].trim(), question[3].trim(), question[4].trim());
+        return String.format("%s %s %s %s", question[0].trim(), question[1].trim(), question[2].trim(), question[3].trim());
     }
 
+    public String[] getQuestionParts(){
+        return question;
+    }
     public String getQeustionPart(int part){
         return question[part];
     }

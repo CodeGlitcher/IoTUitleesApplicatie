@@ -9,7 +9,7 @@ import java.awt.*;
  */
 public class RowVerify extends InputVerifier {
 
-    public static final int MAX_LENGTH = 50;
+    public static final int MAX_LENGTH = 17;
 
     @Override
     public boolean verify(JComponent input) {
