@@ -1,5 +1,7 @@
 package iot.meetding.view;
 
+import iot.meetding.ArduinoSerialPort;
+import iot.meetding.Threads.Thread_SendConfig;
 import iot.meetding.controller.ButtonColumn;
 import iot.meetding.controller.verifiers.IntVerify;
 import iot.meetding.model.IoTmodel;
@@ -9,10 +11,12 @@ import iot.meetding.view.components.HintTextField;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
@@ -40,7 +44,14 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
     private JCheckBox checkbox_za;
     private JCheckBox checkbox_zo;
     private JScrollPane scroll;
+    private JButton button_AddQuestion;
     private DefaultTableModel tModel;
+
+
+    private int COLUMN_ID = 0;
+    private int COLUMN_QUESTION =1;
+    private int COLUMN_EDIT = 2;
+    private int COLUMN_DELETE =3;
 
 
     public void createUIComponents() {
@@ -67,7 +78,7 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
             public void actionPerformed(ActionEvent e) {
                 int modelRow = Integer.valueOf(e.getActionCommand());
                 IoTmodel m = IoTmodel.getInstance();
-                EditQuestion dialog = new EditQuestion(m.getQuestions().get(modelRow));
+                EditQuestion dialog = new EditQuestion(null,true, m.getQuestions().get(modelRow));
                 dialog.pack();
                 dialog.setVisible(true);
             }
@@ -79,16 +90,21 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
                 IoTmodel.getInstance().getQuestions().get(modelRow).delete();
             }
         };
-        table_Qeustion.getColumnModel().getColumn(0).setMaxWidth(50);
-        table_Qeustion.getColumnModel().getColumn(1).setPreferredWidth(400);
-        table_Qeustion.getColumnModel().getColumn(2).setMaxWidth(80);
-        table_Qeustion.getColumnModel().getColumn(3).setMaxWidth(80);
+        table_Qeustion.getColumnModel().getColumn(COLUMN_ID).setMaxWidth(50);
+        table_Qeustion.getColumnModel().getColumn(COLUMN_QUESTION).setPreferredWidth(400);
+        table_Qeustion.getColumnModel().getColumn(COLUMN_EDIT).setMaxWidth(80);
+        table_Qeustion.getColumnModel().getColumn(COLUMN_DELETE).setMaxWidth(80);
         table_Qeustion.getTableHeader().setReorderingAllowed(false);
 
-        new ButtonColumn(table_Qeustion, edit, 2);
-        new ButtonColumn(table_Qeustion, delete, 3);
+        new ButtonColumn(table_Qeustion, edit, COLUMN_EDIT);
+        new ButtonColumn(table_Qeustion, delete, COLUMN_DELETE);
 
         button_Save.addActionListener(this);
+        button_AddQuestion.addActionListener(this);
+        button_DownloadFromArduino.addActionListener(this);
+        button_SendArduino.addActionListener(this);
+        button_LoadLocalFile.addActionListener(this);
+
         fillUI();
     }
 
@@ -133,25 +149,47 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
     }
 
     private Object[] createRow(ConfigQuestion q) {
-        Object[] result = new Object[4];
+        Object[] result = new Object[tModel.getColumnCount()];
 
-        result[0] = q.getKey();
-        result[1] = q.getQuestion();
-        result[2] = new ImageIcon(getClass().getResource("/resource/config/pencil.png"));
-        result[3] = new ImageIcon(getClass().getResource("/resource/config/close.png"));
+        result[COLUMN_ID] = q.getKey();
+        result[COLUMN_QUESTION] = q.getQuestion();
+        result[COLUMN_EDIT] = new ImageIcon(getClass().getResource("/resource/config/pencil.png"));
+        result[COLUMN_DELETE] = new ImageIcon(getClass().getResource("/resource/config/close.png"));
         return result;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        IoTmodel.getInstance().readQuestion();
         updateModel();
         String action = e.getActionCommand();
         if(action.equals(button_Save.getActionCommand())){
             saveConfig();
+        } else if (action.equals(button_AddQuestion.getActionCommand())) {
+            ConfigQuestion q = IoTmodel.getInstance().createQuestion();
+            EditQuestion dialog = new EditQuestion(q);
+            dialog.pack();
+            dialog.setVisible(true);
+        } else if(action.equals(button_LoadLocalFile.getActionCommand())){
+            loadConfigFile();
+        } else if(action.equals(button_SendArduino.getActionCommand())) {
+            //TODO
+            new Thread_SendConfig(IoTmodel.getInstance().getComPort()).start();
+
+        } else if (action.equals(button_DownloadFromArduino.getActionCommand())){
+            //TODO
         }
     }
 
+
+
+    private void loadConfigFile() {
+        try {
+            File dir = IoTmodel.getInstance().getConfigDir();
+            IoTmodel.getInstance().readConfig(new File(dir, "local_config.ini"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void saveConfig() {
         try{
@@ -176,7 +214,6 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
 
 
 
-
     }
 
 
@@ -192,18 +229,25 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
             switch (day.getKey()) {
                 case "ma":
                     day.setValue(checkbox_ma.isSelected());
+                    break;
                 case "di":
                     day.setValue(checkbox_di.isSelected());
+                    break;
                 case "wo":
                     day.setValue(checkbox_wo.isSelected());
+                    break;
                 case "do":
                     day.setValue(checkbox_do.isSelected());
+                    break;
                 case "vr":
                     day.setValue(checkbox_vr.isSelected());
+                    break;
                 case "za":
                     day.setValue(checkbox_za.isSelected());
+                    break;
                 case "zo":
                     day.setValue(checkbox_zo.isSelected());
+                    break;
                 default:
                     break;
 
@@ -214,7 +258,7 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
     private class QuestionTableModel extends DefaultTableModel{
         @Override
         public boolean isCellEditable(int row, int column) {
-            return column == 2 || column ==3;
+            return column == COLUMN_EDIT || column ==COLUMN_DELETE;
         }
     }
 }

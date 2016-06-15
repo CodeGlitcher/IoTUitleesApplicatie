@@ -1,7 +1,6 @@
 package iot.meetding.model;
 
 import iot.meetding.ArduinoSerialPort;
-import iot.meetding.Logger;
 import iot.meetding.Threads.Thread_CheckArduino;
 import iot.meetding.Threads.Thread_ReadData;
 import iot.meetding.view.beans.ConfigItem;
@@ -12,6 +11,7 @@ import jssc.SerialPortList;
 import org.ini4j.Ini;
 import org.ini4j.Profile;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -39,16 +39,15 @@ public class IoTmodel extends Observable implements Observer {
     private ConfigItem<Integer> timeRangeQuestion;
     private ArrayList<ConfigItem<Boolean>> days;
 
+    private String comPort;
+
+    private Frame frame;
 
     private IoTmodel() {
-
+        comPort = "";
         ports = new TreeMap<>();
 
         questions = new ArrayList<>();
-
-        readQuestion();
-        readQuestion();
-        readQuestion();
 
         // static config
         startTime = new ConfigItem<>("StartTime", 0);
@@ -73,7 +72,7 @@ public class IoTmodel extends Observable implements Observer {
     }
 
 
-    public ConfigQuestion readQuestion(){
+    public ConfigQuestion createQuestion(){
         ConfigQuestion q = new ConfigQuestion();
         q.addObserver(this);
         setChanged();
@@ -117,12 +116,8 @@ public class IoTmodel extends Observable implements Observer {
         ArduinoSerialPort port = ports.remove(portName);
         try {
             port.closePort();
-        } catch (SerialPortException e) {
-            Logger.log("Closing port failed");
-            Logger.log(e.getMessage());
-        } catch (NullPointerException e) {
-            Logger.log(String.format("Key does not exist: %1s", portName));
-            Logger.log(e.getMessage());
+        } catch (SerialPortException | NullPointerException e) {
+            System.out.println("Closing failed");
         }
     }
 
@@ -149,7 +144,7 @@ public class IoTmodel extends Observable implements Observer {
         notifyObservers(newPort.getPortName());
     }
 
-    public ArduinoSerialPort getPort(String selectedItem) {
+    private ArduinoSerialPort getPort(String selectedItem) {
         return ports.get(selectedItem);
     }
 
@@ -221,11 +216,6 @@ public class IoTmodel extends Observable implements Observer {
         addQuestions(result);
 
         addConfig(result);
-
-        for(byte[] buffer : result){
-            System.out.print(new String(buffer));
-        }
-
 
         return result;
     }
@@ -331,21 +321,20 @@ public class IoTmodel extends Observable implements Observer {
             ini.load(new FileReader(config));
 
             for(String section : ini.keySet()){
-                System.out.println(section);
                 if(section.startsWith("vraag")){
                     readQuestion(ini.get(section));
                 } else if (section.equals("tijden")) {
                     readTimeConfig(ini.get(section));
-                } else if (section.equals("dagen")){
+                } else if (section.equals("dagen")) {
                     readDayConfig(ini.get(section));
-                } else {
-                    //
                 }
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+        setChanged();
+        notifyObservers();
     }
 
     private void readDayConfig(Profile.Section section) {
@@ -367,13 +356,12 @@ public class IoTmodel extends Observable implements Observer {
     }
 
     private void readQuestion(Profile.Section section){
-        ConfigQuestion question = readQuestion();
+        ConfigQuestion question = createQuestion();
         ArrayList<String[]> answers = new ArrayList<>();
 
         for(String key : section.keySet()){
             if(key.startsWith("vraag_deel")){
                 String num = key.substring(key.length()-1);
-                System.out.println(key + "/" + section.get(key));
                 question.setQuestion(Integer.parseInt(num), section.get(key));
 
             } else if (key.startsWith("antwoord")) {
@@ -382,12 +370,45 @@ public class IoTmodel extends Observable implements Observer {
                 answerNumb = Integer.parseInt(key.substring(8, key.indexOf("_")));
                 answerPart = Integer.parseInt(key.substring(key.length() - 1));
                 while(answers.size() < answerNumb+1){
-                    answers.add(new String[3]);
+                    answers.add(new String[ConfigQuestion.ROWS_ANSWER]);
                 }
                 answers.get(answerNumb)[answerPart] = section.get(key);
             }
         }
         question.setAnswers(answers);
+    }
+
+    public void setComPort(String comPort) {
+        this.comPort = comPort;
+    }
+
+    public void readConfigFromArduino(){
+
+    }
+    public boolean sendConfigToArduino(){
+        if(questions.size() == 0){
+            return false;
+        }
+        for(ConfigQuestion q : questions){
+            if(q.getAnswers().size() == 0){
+                return false;
+            }
+        }
+
+
+
+        return true;
+    }
+
+    public Frame getFrame() {
+        return frame;
+    }
+    public void setFrame(Frame frame){
+        this.frame = frame;
+    }
+
+    public ArduinoSerialPort getComPort() {
+        return getPort(comPort);
     }
 }
 

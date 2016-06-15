@@ -2,7 +2,6 @@ package iot.meetding.Threads;
 
 
 import iot.meetding.ArduinoSerialPort;
-import iot.meetding.Logger;
 import iot.meetding.model.IoTmodel;
 import iot.meetding.view.beans.WindowDataReadArduino;
 import jssc.SerialPortEvent;
@@ -15,7 +14,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by Rob on 23-5-2016.
@@ -89,7 +87,6 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
             Desktop.getDesktop().open(f);
 
         } catch (Exception exception) {
-            Logger.log(exception.getMessage());
             data.appendLogData("Error reading");
             data.appendLogData(exception.getMessage());
         }
@@ -108,10 +105,8 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
                 String message = new String(buff);
                 if(!got_file_size){
                     message = getFileSize(message);
-                    Logger.log("Data left:/" + message + "/");
                     buff = message.getBytes();
                     if(message.isEmpty()){
-                        Logger.log("Return serialevent");
                         return;
                     }
                 }
@@ -120,16 +115,15 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
                 if(data.appendCSV() && isFirstLine && fileExist){
                     if(message.contains("\n")){ // ignore data until \n is found
                         String tmp = message.substring(message.indexOf("\n")+1, message.length()); // get data after \n en write it.
-                        Logger.log("firstLine:/" + tmp + "/");
                         stream.write(tmp.getBytes());
                         isFirstLine = false;
                     }
                     return;
                 }
                 // check for end of file command
-                if(message.endsWith(ArduinoSerialPort.ANSWER_READ_END)){
+                if(message.endsWith(ArduinoSerialPort.ANSWER_READ_DATA)){
                     done = true;
-                    String trim = message.substring(0,message.length() - ArduinoSerialPort.ANSWER_READ_END.length());
+                    String trim = message.substring(0,message.length() - ArduinoSerialPort.ANSWER_READ_DATA.length());
                     stream.write(trim.getBytes());
                     data.appendLogData("End of File command received");
                     return;
@@ -138,7 +132,7 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
                 // write data to file
                 stream.write(buff);
             } catch (SerialPortException ex) {
-                Logger.log("Error in receiving data from " + port.getPortName()+": " + ex.getMessage());
+                data.appendLogData("Reading failed, data corrupt. Delete data file and try aggain");
                 done = true;// something went wrong stop this thread.
             } catch (IOException e) {
                 e.printStackTrace();
@@ -148,7 +142,6 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
     }
 
     private synchronized String getFileSize(String message) {
-        Logger.log("getFileSize: " + message);
         temp += message;
         if(!temp.contains("\n")){
             return ""; // do nothing

@@ -54,6 +54,7 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
         // if window is closed, end application (default is hide window)
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
+        comboBox_comPorts.addActionListener(this);
     }
 
     /**
@@ -73,6 +74,8 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
             model.startReadData((String) comboBox_comPorts.getSelectedItem(), data_read_window);
         } else if (action.equals(checkBox_appendCSV.getActionCommand())) {
             data_read_window.setAppendCSV(checkBox_appendCSV.isSelected());
+        } else if (action.equals(comboBox_comPorts.getActionCommand())){
+            model.setComPort((String)comboBox_comPorts.getSelectedItem());
         }
     }
 

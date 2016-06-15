@@ -1,5 +1,6 @@
 package iot.meetding;
 
+import iot.meetding.Threads.Thread_SendConfig;
 import iot.meetding.model.IoTmodel;
 import iot.meetding.view.MainWindow;
 import javafx.stage.FileChooser;
@@ -12,14 +13,10 @@ public class Main {
 
     public static void main(String[] args) {
         // Open main window
-            try {
-            File dir = IoTmodel.getInstance().getConfigDir();
-            IoTmodel.getInstance().readConfig(new File(dir, "local_config.ini"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
         MainWindow main = new MainWindow();
         main.setVisible(true);
+        IoTmodel.getInstance().setFrame(main);
         // on shutdown close all com ports
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             public void run() {
@@ -27,7 +24,9 @@ public class Main {
             }
         }));
 
-       //IoTmodel.getInstance().createConfigFile();
+
+
+
 
 
 

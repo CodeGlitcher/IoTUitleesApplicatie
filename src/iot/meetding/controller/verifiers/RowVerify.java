@@ -16,7 +16,6 @@ public class RowVerify extends InputVerifier {
         if(input instanceof  JTextField){
 
             String in = ((JTextField) input).getText();
-            System.out.println(in.length());
             if(in.length() <=  MAX_LENGTH){
                 input.setBackground(Color.WHITE);
                 return true;

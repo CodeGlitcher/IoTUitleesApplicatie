@@ -4,6 +4,7 @@ import iot.meetding.controller.ButtonColumnRow3;
 import iot.meetding.controller.verifiers.RowVerify;
 import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.components.HintTextField;
+import jdk.nashorn.internal.runtime.regexp.joni.Config;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -12,6 +13,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 
@@ -32,18 +34,56 @@ public class EditQuestion extends JDialog {
     private JButton buttton_AddAnswer;
     private JTable table_answers;
 
+    private int COLUMN_ANSWER =0;
+    private int COLUMN_CHARS = 1;
+    private int COLUMN_BUTTON =2;
+
     private DefaultTableModel tModel;
 
     private ConfigQuestion question;
 
+    public EditQuestion(Frame x ,boolean modal,ConfigQuestion question) {
+        super(x,modal);
+        __construct(question);
 
-    public EditQuestion(ConfigQuestion question) {
+    }
+
+    private void __construct(ConfigQuestion question){
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
 
+        setSize(500,600);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        final int x = (screenSize.width - getWidth()) / 2;
+        final int y = (screenSize.height - getHeight()) / 2;
+        setLocation(x, y);
         this.question = question;
+        addActionListener();
 
+
+        // Set Listeners for textfields
+        textField_QuestionPart1.getDocument().addDocumentListener(new QuestionListener());
+        textField_QuestionPart2.getDocument().addDocumentListener(new QuestionListener());
+        textField_QuestionPart3.getDocument().addDocumentListener(new QuestionListener());
+        textField_QuestionPart4.getDocument().addDocumentListener(new QuestionListener());
+
+        // set text
+        textField_QuestionPart1.setText(question.getQeustionPart(0));
+        textField_QuestionPart2.setText(question.getQeustionPart(1));
+        textField_QuestionPart3.setText(question.getQeustionPart(2));
+        textField_QuestionPart4.setText(question.getQeustionPart(3));
+        createTable(question);
+    }
+
+    public EditQuestion(ConfigQuestion question) {
+        super();
+        __construct(question);
+
+
+    }
+
+    private void addActionListener() {
         // Add action listeners
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -79,25 +119,15 @@ public class EditQuestion extends JDialog {
                 addAnswer();
             }
         });
+    }
 
-        // Set Listeners for textfields
-        textField_QuestionPart1.getDocument().addDocumentListener(new QuestionListener());
-        textField_QuestionPart2.getDocument().addDocumentListener(new QuestionListener());
-        textField_QuestionPart3.getDocument().addDocumentListener(new QuestionListener());
-        textField_QuestionPart4.getDocument().addDocumentListener(new QuestionListener());
-
-        // set text
-        textField_QuestionPart1.setText(question.getQeustionPart(0));
-        textField_QuestionPart2.setText(question.getQeustionPart(1));
-        textField_QuestionPart3.setText(question.getQeustionPart(2));
-        textField_QuestionPart4.setText(question.getQeustionPart(3));
-
+    private void createTable(ConfigQuestion question) {
         /// create table
         tModel = new AnswerTableModel();
         table_answers.setModel(tModel);
         tModel.addColumn("Antwoord");
-        tModel.addColumn("Verwijder");
         tModel.addColumn("");
+        tModel.addColumn("Verwijder");
         table_answers.setVisible(true);
         table_answers.setFillsViewportHeight(true);
 
@@ -111,7 +141,7 @@ public class EditQuestion extends JDialog {
             }
         };
         // add button to table
-        new ButtonColumnRow3(table_answers, delete, 2);
+        new ButtonColumnRow3(table_answers, delete, COLUMN_BUTTON);
 
         // if a cell value changes, recalculate row length
         tModel.addTableModelListener(new TableModelListener() {
@@ -124,23 +154,23 @@ public class EditQuestion extends JDialog {
                     return;
                 }
                 // resul is the new value to insert in the DB
-                String result = table_answers.getValueAt(row, 0).toString();
+                String result = table_answers.getValueAt(row, COLUMN_ANSWER).toString();
                 // update is my method to update. Update needs the id for
                 // the where clausule. resul is the value that will receive
                 // the cell and you need column to tell what to update.
                 String newValue = String.format("(%d/%d)",result.length(), MAX_LENGTH);
-                String curr = table_answers.getValueAt(row, 2).toString();
+                String curr = table_answers.getValueAt(row, COLUMN_CHARS).toString();
                 // setting the value will trigger a new update event.
                 // only set value when it is different to prevent stackoverflow error
                 if(!newValue.equals(curr)){
-                    tModel.setValueAt(newValue, row , 1 );
+                    tModel.setValueAt(newValue, row , COLUMN_CHARS );
                 }
             }
         });
         table_answers.getTableHeader().setReorderingAllowed(false);
-        table_answers.getColumnModel().getColumn(0).setPreferredWidth(150);
-        table_answers.getColumnModel().getColumn(1).setPreferredWidth(50);
-        table_answers.getColumnModel().getColumn(2).setPreferredWidth(50);
+        table_answers.getColumnModel().getColumn(COLUMN_ANSWER).setPreferredWidth(150);
+        table_answers.getColumnModel().getColumn(COLUMN_CHARS).setMaxWidth(60);
+        table_answers.getColumnModel().getColumn(COLUMN_BUTTON).setMaxWidth(80);
 
         // add answers to table
         question.getAnswers().forEach(this::addAnswer);
@@ -151,8 +181,8 @@ public class EditQuestion extends JDialog {
                 JTable source = (JTable)e.getSource();
                 int row = source.rowAtPoint( e.getPoint() );
                 int column = source.columnAtPoint( e.getPoint() );
-                if(column == 0){
-                    table_answers.editCellAt(row, 0);
+                if(column == COLUMN_ANSWER){
+                    table_answers.editCellAt(row, COLUMN_ANSWER);
                 }
                 super.mouseClicked(e);
             }
@@ -164,10 +194,10 @@ public class EditQuestion extends JDialog {
      * Add empty answer
      */
     private void addAnswer() {
-        String[] newAnswer = new String[3];
-        newAnswer[0] ="";
-        newAnswer[1] = "";
-        newAnswer[2] = "";
+        String[] newAnswer = new String[ConfigQuestion.ROWS_ANSWER];
+        for(int i =0; i< newAnswer.length; i++){
+            newAnswer[i]  = "";
+        }
         addAnswer(newAnswer);
     }
 
@@ -176,27 +206,20 @@ public class EditQuestion extends JDialog {
      * @param answer array with length 3
      */
     private void addAnswer(String [] answer){
-        if(answer.length != 3){
+        if(answer.length != ConfigQuestion.ROWS_ANSWER){
             throw new IndexOutOfBoundsException("Answer length incorrect");
         }
-        Object[] row = new Object[3];
-        row[0] = answer[0];
 
-        row[1] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
-        row[2] = new ImageIcon(getClass().getResource("/resource/config/close.png"));
-        tModel.addRow(row);
 
-        row = new Object[3];
-        row[0] = answer[1];
-        row[1] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
-        row[2] = null;
-        tModel.addRow(row);
+        Object[] row;
 
-        row = new Object[3];
-        row[0] = answer[2];
-        row[1] = String.format("(%d/%d)",row[0].toString().length(),  MAX_LENGTH);
-        row[2] = null;
-        tModel.addRow(row);
+        for (String anAnswer : answer) {
+            row = new Object[tModel.getColumnCount()];
+            row[COLUMN_ANSWER] = anAnswer;
+            row[COLUMN_CHARS] = String.format("(%d/%d)", row[0].toString().length(), MAX_LENGTH);
+            row[COLUMN_BUTTON] = new ImageIcon(getClass().getResource("/resource/config/close.png"));
+            tModel.addRow(row);
+        }
 
 
 
@@ -214,17 +237,17 @@ public class EditQuestion extends JDialog {
         question.setQuestion(3, textField_QuestionPart4.getText());
 
         ArrayList<String[]> newAnswers = new ArrayList<>();
-        String[] answer = new String[2];
+        String[] answer;
 
-        int totAnswers = tModel.getRowCount() / 3;
+        int totAnswers = tModel.getRowCount() / ConfigQuestion.ROWS_ANSWER;
         int index = 0;
         for(int i = 0; i < totAnswers; i++){
-            answer = new String[3];
-            answer[0] = tModel.getValueAt(index, 0).toString();
-            answer[1] = tModel.getValueAt(index+1, 0).toString();
-            answer[2] = tModel.getValueAt(index+2, 0).toString();
+            answer = new String[ConfigQuestion.ROWS_ANSWER];
+            for(int x = 0; x< answer.length; x++){
+                answer[x] = tModel.getValueAt(index+x,COLUMN_ANSWER).toString();
+            }
             newAnswers.add(answer);
-            index += 3;
+            index += ConfigQuestion.ROWS_ANSWER;
         }
         question.setAnswers(newAnswers);
 
@@ -293,7 +316,7 @@ public class EditQuestion extends JDialog {
          */
         @Override
         public boolean isCellEditable(int row, int column){
-            return column == 0 || column == 2 && row % 3 == 0;
+            return column == COLUMN_ANSWER || column == COLUMN_BUTTON && row % ConfigQuestion.ROWS_ANSWER == 0;
         }
 
     }

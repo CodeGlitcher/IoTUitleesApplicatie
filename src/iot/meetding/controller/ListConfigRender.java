@@ -1,9 +1,7 @@
 package iot.meetding.controller;
 
-import iot.meetding.Logger;
 import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.components.ListQuestion;
-import iot.meetding.view.beans.ConfigItem;
 
 import javax.swing.*;
 import java.awt.*;

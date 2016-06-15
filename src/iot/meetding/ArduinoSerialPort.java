@@ -16,7 +16,16 @@ public class ArduinoSerialPort extends SerialPort {
 
 
     public static final String MESSAGE_READ_DATA =  "#1";
-    public static final String ANSWER_READ_END = "$1";
+    public static final String ANSWER_READ_DATA = "$1";
+
+    public static final String MESSAGE_READ_CONFIG =  "#2";
+    public static final String ANSWER_READ_CONFIG = "$2";
+
+    public static final String MESSAGE_SEND_CONFIG =  "#3";
+    public static final String ANSWER_SEND_CONFIG = "$";
+
+    public static final String MESSAGE_SEND_TIME =  "#4";
+    public static final String ANSWER_SEND_TIME = "$4";
 
 
     public static final byte DELIMITER = (byte) '\n';
@@ -29,7 +38,7 @@ public class ArduinoSerialPort extends SerialPort {
     public boolean openPort() throws SerialPortException {
         boolean result = super.openPort();
         if(result){
-            setParams(BAUDRATE_38400, DATABITS_8, STOPBITS_1, PARITY_NONE);
+            setParams(BAUDRATE_115200, DATABITS_8, STOPBITS_1, PARITY_NONE);
         }
         return result;
     }

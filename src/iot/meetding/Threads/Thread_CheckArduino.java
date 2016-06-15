@@ -1,7 +1,6 @@
 package iot.meetding.Threads;
 
 import iot.meetding.ArduinoSerialPort;
-import iot.meetding.Logger;
 import iot.meetding.model.IoTmodel;
 import iot.meetding.view.beans.WindowDataReadArduino;
 import jssc.SerialPortEvent;
@@ -38,7 +37,6 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
             port.writeString(ArduinoSerialPort.MESSAGE_IS_ARDUINO);
             sleep(TIME_OUT);
         } catch (SerialPortException exception) {
-            Logger.log(exception.getMessage());
         } catch (InterruptedException interrupt) {
             data.appendLogData("Got answer from com port");
         }
@@ -53,7 +51,6 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
                 port.closePort();
             }
         } catch (SerialPortException e) {
-            Logger.log(e.getMessage());
         } finally {
             IoTmodel.getInstance().closeThread();
         }
@@ -69,11 +66,10 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
                 data.appendLogData(receivedData);
                 isArduino = receivedData.equals(ArduinoSerialPort.ANSWER_IS_ARDUINO) || isArduino;
                 if (isArduino) {
-                    Logger.log("Arduino found on: " + port.getPortName());
                     interrupt();
                 }
             } catch (SerialPortException ex) {
-                Logger.log("Error in receiving data from " + port.getPortName() + ": " + ex.getMessage());
+                data.appendLogData("Error on port: " + port.getPortName());
             }
         }
     }

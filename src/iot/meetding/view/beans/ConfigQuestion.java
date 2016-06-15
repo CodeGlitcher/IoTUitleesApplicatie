@@ -11,6 +11,9 @@ import java.util.Observable;
  */
 public class ConfigQuestion extends Observable {
 
+    public static final int ROWS_QUESTION = 4;
+    public static final int ROWS_ANSWER =3;
+
     private static int questionID = 0;
     private String[] question;
     private Boolean deleted;
@@ -21,18 +24,12 @@ public class ConfigQuestion extends Observable {
         key = questionID;
         questionID++;
 
-        question = new String[4];
-        question[0] = "Dit is een";
-        question[1] = "voor-";
-        question[2] = "beeld";
-        question[3] = ".";
+        question = new String[ROWS_QUESTION];
+        for(int i = 0; i<question.length; i++){
+            question[i] = "";
+        }
         answers = new ArrayList<>();
 
-        String[] answer = new String[3];
-        answer[0] = "1";
-        answer[1] = "2";
-        answer[2] = "3";
-        answers.add(answer);
         deleted = false;
     }
 
@@ -45,7 +42,7 @@ public class ConfigQuestion extends Observable {
     }
 
     public String getKey(){
-        return "#: " + key;
+        return "#" + key;
     }
 
     public String getQuestion(){
