@@ -91,6 +91,7 @@
                   <hideActionText value="false"/>
                   <selected value="false"/>
                   <text value="Voeg data toe aan csv"/>
+                  <visible value="false"/>
                 </properties>
               </component>
               <vspacer id="45679">

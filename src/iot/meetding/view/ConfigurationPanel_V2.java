@@ -1,7 +1,7 @@
 package iot.meetding.view;
 
-import iot.meetding.ArduinoSerialPort;
-import iot.meetding.Threads.Thread_SendConfig;
+import iot.meetding.threads.Thread_ReadConfig;
+import iot.meetding.threads.Thread_SendConfig;
 import iot.meetding.controller.ButtonColumn;
 import iot.meetding.controller.verifiers.IntVerify;
 import iot.meetding.model.IoTmodel;
@@ -11,7 +11,6 @@ import iot.meetding.view.components.HintTextField;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -119,7 +118,9 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         IoTmodel model = IoTmodel.getInstance();
 
         for (ConfigQuestion q : model.getQuestions()) {
-            tModel.addRow(createRow(q));
+            Object[] ob = createRow(q);
+
+            tModel.addRow(ob);
         }
         textField_EndTime.setText(model.getEndConfig().getValue() + "");
         textField_StartTime.setText(model.getStartConfig().getValue() + "");
@@ -128,19 +129,19 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         for (ConfigItem<Boolean> day : model.getDayConfig()) {
             switch (day.getKey()) {
                 case "ma":
-                    checkbox_ma.setSelected(day.getValue());
+                    checkbox_ma.setSelected(day.getValue()); break;
                 case "di":
-                    checkbox_di.setSelected(day.getValue());
+                    checkbox_di.setSelected(day.getValue());break;
                 case "wo":
-                    checkbox_wo.setSelected(day.getValue());
+                    checkbox_wo.setSelected(day.getValue());break;
                 case "do":
-                    checkbox_do.setSelected(day.getValue());
+                    checkbox_do.setSelected(day.getValue());break;
                 case "vr":
-                    checkbox_vr.setSelected(day.getValue());
+                    checkbox_vr.setSelected(day.getValue());break;
                 case "za":
-                    checkbox_za.setSelected(day.getValue());
+                    checkbox_za.setSelected(day.getValue());break;
                 case "zo":
-                    checkbox_zo.setSelected(day.getValue());
+                    checkbox_zo.setSelected(day.getValue());break;
                 default:
                     break;
 
@@ -171,13 +172,26 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
             dialog.setVisible(true);
         } else if(action.equals(button_LoadLocalFile.getActionCommand())){
             loadConfigFile();
-        } else if(action.equals(button_SendArduino.getActionCommand())) {
-            //TODO
-            new Thread_SendConfig(IoTmodel.getInstance().getComPort()).start();
-
-        } else if (action.equals(button_DownloadFromArduino.getActionCommand())){
-            //TODO
         }
+        try{
+            if(action.equals(button_SendArduino.getActionCommand())) {
+                //TODO
+                IoTmodel model = IoTmodel.getInstance();
+                if(model.checkConfig()){
+                    new Thread_SendConfig(model.getComPort()).start();
+                } else {
+                    System.out.print("?");
+                    JOptionPane.showMessageDialog(model.getFrame(), "Je instellingen kloppen niet.\nZorg dat alle velden een geldige waarde hebben.");
+                }
+
+            } else if (action.equals(button_DownloadFromArduino.getActionCommand())){
+                // for some reason  running this in a threads causes an exception. Simple solution run it on the main thread.
+                new Thread_ReadConfig(IoTmodel.getInstance().getComPort()).run();
+            }
+        } catch (Exception ex){
+
+        }
+
     }
 
 
@@ -219,10 +233,12 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
 
     private void updateModel() {
         IoTmodel m = IoTmodel.getInstance();
-        m.getMeasurementsConfig().setValue((Integer.parseInt(textField_IntervalTime.getText())));
-        m.getQuestionConfig().setValue((Integer.parseInt(textField_intervalQuestion.getText())));
-        m.getStartConfig().setValue((Integer.parseInt(textField_StartTime.getText())));
-        m.getEndConfig().setValue((Integer.parseInt(textField_EndTime.getText())));
+        m.getMeasurementsConfig().setValue((Integer.parseInt(!textField_IntervalTime.getText().equals("") ? textField_IntervalTime.getText() : "0")));
+
+        m.getQuestionConfig().setValue((Integer.parseInt(!textField_intervalQuestion.getText().equals("") ? textField_intervalQuestion.getText() : "0")));
+        m.getStartConfig().setValue((Integer.parseInt(!textField_StartTime.getText().equals("") ? textField_StartTime.getText() : "0")));
+        m.getEndConfig().setValue((Integer.parseInt(!textField_EndTime.getText().equals("") ? textField_EndTime.getText() : "0")));
+
 
 
         for (ConfigItem<Boolean> day : m.getDayConfig()) {
@@ -254,6 +270,8 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
             }
         }
     }
+
+
 
     private class QuestionTableModel extends DefaultTableModel{
         @Override

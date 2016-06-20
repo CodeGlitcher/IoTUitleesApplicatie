@@ -1,18 +1,19 @@
 package iot.meetding;
 
-import iot.meetding.Threads.Thread_SendConfig;
 import iot.meetding.model.IoTmodel;
 import iot.meetding.view.MainWindow;
-import javafx.stage.FileChooser;
-import javafx.stage.Window;
 
-import java.io.File;
-import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 public class Main {
 
     public static void main(String[] args) {
         // Open main window
+
+
+
 
         MainWindow main = new MainWindow();
         main.setVisible(true);

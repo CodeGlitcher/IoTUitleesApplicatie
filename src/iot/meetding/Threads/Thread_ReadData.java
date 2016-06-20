@@ -1,4 +1,4 @@
-package iot.meetding.Threads;
+package iot.meetding.threads;
 
 
 import iot.meetding.ArduinoSerialPort;
@@ -21,11 +21,6 @@ import java.util.Calendar;
  */
 public class Thread_ReadData extends Thread implements SerialPortEventListener {
 
-    private final int TIME_OUT = 15000;
-    private final int ARDUINO_BOOT_TIME = 2000;
-    private boolean isArduino = false;
-
-    private int state = 0;
 
     private FileOutputStream stream;
     private WindowDataReadArduino data;
@@ -43,6 +38,7 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
         this.data = data;
         this.port = port;
     }
+
     private Calendar start;
 
     @Override

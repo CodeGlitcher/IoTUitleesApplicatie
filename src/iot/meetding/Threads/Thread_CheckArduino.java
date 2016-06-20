@@ -1,4 +1,4 @@
-package iot.meetding.Threads;
+package iot.meetding.threads;
 
 import iot.meetding.ArduinoSerialPort;
 import iot.meetding.model.IoTmodel;

@@ -1,19 +1,14 @@
 package iot.meetding.view;
 
-import iot.meetding.controller.ListConfigRender;
 import iot.meetding.model.IoTmodel;
-import iot.meetding.view.beans.ConfigItem;
-import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.beans.WindowDataReadArduino;
 
 import javax.swing.*;
 import javax.swing.text.DefaultCaret;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 
 /**
  * Created by Rob on 13-5-2016.

@@ -1,8 +1,9 @@
 package iot.meetding.model;
 
 import iot.meetding.ArduinoSerialPort;
-import iot.meetding.Threads.Thread_CheckArduino;
-import iot.meetding.Threads.Thread_ReadData;
+import iot.meetding.controller.verifiers.RowVerify;
+import iot.meetding.threads.Thread_CheckArduino;
+import iot.meetding.threads.Thread_ReadData;
 import iot.meetding.view.beans.ConfigItem;
 import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.beans.WindowDataReadArduino;
@@ -315,11 +316,9 @@ public class IoTmodel extends Observable implements Observer {
         }
 
         questions.clear();
-
         try {
             Ini ini = new Ini();
             ini.load(new FileReader(config));
-
             for(String section : ini.keySet()){
                 if(section.startsWith("vraag")){
                     readQuestion(ini.get(section));
@@ -329,12 +328,13 @@ public class IoTmodel extends Observable implements Observer {
                     readDayConfig(ini.get(section));
                 }
             }
+            setChanged();
+            notifyObservers();
 
-        } catch (IOException e) {
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
         }
-        setChanged();
-        notifyObservers();
     }
 
     private void readDayConfig(Profile.Section section) {
@@ -385,7 +385,7 @@ public class IoTmodel extends Observable implements Observer {
     public void readConfigFromArduino(){
 
     }
-    public boolean sendConfigToArduino(){
+    public boolean checkConfig(){
         if(questions.size() == 0){
             return false;
         }
@@ -393,10 +393,14 @@ public class IoTmodel extends Observable implements Observer {
             if(q.getAnswers().size() == 0){
                 return false;
             }
+            for(String[] answer : q.getAnswers()){
+                for(String s : answer){
+                    if(s.length() > RowVerify.MAX_LENGTH){
+                        return false;
+                    }
+                }
+            }
         }
-
-
-
         return true;
     }
 
