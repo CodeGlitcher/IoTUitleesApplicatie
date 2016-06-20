@@ -21,18 +21,25 @@ import java.util.Observable;
 
 /**
  * Created by Rob on 18-5-2016.
- *
+ * IotModel for functions and data that is needed in multple places
  */
 public class IoTmodel extends Observable implements Observer {
 
+
+    //Dir name for files
     private final String DATA_DIR = "Klimaatscanner";
+    // part of singleton pattern
     private static IoTmodel model;
 
+    // list of serial ports
     private TreeMap<String,ArduinoSerialPort> ports;
+    // active thread
     private  Thread t;
+    // number of threads
     private int threadCounter = 0;
 
 
+    // config data
     private ArrayList<ConfigQuestion> questions;
     private ConfigItem<Integer> endTime;
     private ConfigItem<Integer> startTime;
@@ -40,10 +47,15 @@ public class IoTmodel extends Observable implements Observer {
     private ConfigItem<Integer> timeRangeQuestion;
     private ArrayList<ConfigItem<Boolean>> days;
 
+    // selected comport
     private String comPort;
 
+    // main windows frame
     private Frame frame;
 
+    /**
+     * private constructor
+     */
     private IoTmodel() {
         comPort = "";
         ports = new TreeMap<>();
@@ -73,6 +85,10 @@ public class IoTmodel extends Observable implements Observer {
     }
 
 
+    /**
+     * Create a new question and add observer
+     * @return ConfigQuestion object
+     */
     public ConfigQuestion createQuestion(){
         ConfigQuestion q = new ConfigQuestion();
         q.addObserver(this);
@@ -84,12 +100,14 @@ public class IoTmodel extends Observable implements Observer {
 
     /**
      * update Com ports
-     * @param data
+     * @param data window data object
      */
     public synchronized void updateComPorts(WindowDataReadArduino data) {
         if(threadCounter != 0){
+            data.appendLogData("Er wordt al gezocht naar klimaatscanners");
             return;
         }
+
         HashSet<String> result = new HashSet<>();
         // get a simple list of all com ports on the system
         String[] portNames = SerialPortList.getPortNames();
@@ -97,12 +115,16 @@ public class IoTmodel extends Observable implements Observer {
         removeAllPorts();
         // check every port for a arduino
         for (String portName : portNames) {
+            // sometimes the serial library returns the same port multiple times.
+            // we filter the result so only 1 port is used
             if (result.add(portName)) { // make sure only 1 thread per comport
                 try {
                     t = new Thread_CheckArduino(new ArduinoSerialPort(portName),data);
                     t.start();
                     threadCounter++;
                 } catch (SerialPortException e) {
+                    data.appendLogData("Kan serial poort niet openen");
+                    data.appendLogData(e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -110,7 +132,7 @@ public class IoTmodel extends Observable implements Observer {
     }
 
     /**
-     * Close com port en forget it.
+     * Close com port.
      * @param portName the port name
      */
     private synchronized void removePort(String portName) {
@@ -145,9 +167,15 @@ public class IoTmodel extends Observable implements Observer {
         notifyObservers(newPort.getPortName());
     }
 
+    /**
+     *
+     * @param selectedItem
+     * @return
+     */
     private ArduinoSerialPort getPort(String selectedItem) {
         return ports.get(selectedItem);
     }
+
 
     public synchronized void closeThread(){
         threadCounter--;
@@ -173,7 +201,7 @@ public class IoTmodel extends Observable implements Observer {
         }
     }
 
-
+    // getters for config
     public ArrayList<ConfigQuestion> getQuestions(){
         return questions;
     }
@@ -193,11 +221,6 @@ public class IoTmodel extends Observable implements Observer {
         return timeRangeQuestion;
     }
 
-    public void addQuestion(ConfigQuestion configQuestion) {
-        this.questions.add(configQuestion);
-        setChanged();
-        notifyObservers();
-    }
 
     @Override
     public void update(Observable o, Object arg) {
@@ -211,7 +234,10 @@ public class IoTmodel extends Observable implements Observer {
     }
 
 
-
+    /**
+     * Create a config file
+     * @return byte[] with config
+     */
     public ArrayList<byte[]> createConfigFile(){
         ArrayList<byte[]> result = new ArrayList<>();
         addQuestions(result);
@@ -274,7 +300,7 @@ public class IoTmodel extends Observable implements Observer {
     }
 
     /**
-     *
+     * Get directory for data files
      * @return File
      */
     public File getDataDir() throws IOException {
@@ -292,7 +318,7 @@ public class IoTmodel extends Observable implements Observer {
 
 
     /**
-     *
+     * Get directory for config files
      * @return File
      */
     public File getConfigDir() throws IOException {
@@ -308,17 +334,24 @@ public class IoTmodel extends Observable implements Observer {
     }
 
 
-
+    /**
+     * Read config a config file
+     * @param config The config file to read
+     */
     public void readConfig(File config){
 
         if(!config.exists()){
+            setChanged();
+            notifyObservers();
             return;
         }
-
+        // clear data
         questions.clear();
         try {
+            // parse ini file
             Ini ini = new Ini();
             ini.load(new FileReader(config));
+            // check every section
             for(String section : ini.keySet()){
                 if(section.startsWith("vraag")){
                     readQuestion(ini.get(section));
@@ -337,7 +370,14 @@ public class IoTmodel extends Observable implements Observer {
         }
     }
 
+    /**
+     * Parse the day section of the ini file.
+     * @param section, The section
+     */
     private void readDayConfig(Profile.Section section) {
+        if(!section.getName().equals("dagen")){
+            return; // wrong section given
+        }
         for(String key : section.keySet()){
             for(ConfigItem<Boolean> day : days){
                 if(day.getKey().equals(key)){
@@ -348,43 +388,70 @@ public class IoTmodel extends Observable implements Observer {
         }
     }
 
+    /**
+     * Read time config
+     * @param s the section
+     */
     private void readTimeConfig(Profile.Section s) {
+        if(!s.getName().equals("tijden")){
+            return;
+        }
         startTime.setValue(Integer.parseInt(s.get("begintijd")));
         endTime.setValue(Integer.parseInt(s.get("eindtijd")));
         timeRangeMeasure.setValue(Integer.parseInt(s.get("sensorinterval")));
         timeRangeQuestion.setValue(Integer.parseInt(s.get("vraaginterval")));
     }
 
+    /**
+     * Read questions from section
+     * @param section the section
+     */
     private void readQuestion(Profile.Section section){
+        // create a new question
         ConfigQuestion question = createQuestion();
+        // create answer list
         ArrayList<String[]> answers = new ArrayList<>();
 
+
         for(String key : section.keySet()){
+            // if key start with vraag_deel, its a part of a question;
             if(key.startsWith("vraag_deel")){
+                // get the question part number
                 String num = key.substring(key.length()-1);
+                // set questoin
                 question.setQuestion(Integer.parseInt(num), section.get(key));
 
             } else if (key.startsWith("antwoord")) {
+                // if key start with antwoord
 
                 int answerNumb, answerPart;
+                // get the answer number ans part
                 answerNumb = Integer.parseInt(key.substring(8, key.indexOf("_")));
                 answerPart = Integer.parseInt(key.substring(key.length() - 1));
+                // create an answer array
                 while(answers.size() < answerNumb+1){
                     answers.add(new String[ConfigQuestion.ROWS_ANSWER]);
                 }
+                // set answer
                 answers.get(answerNumb)[answerPart] = section.get(key);
             }
         }
         question.setAnswers(answers);
     }
 
+    /**
+     * set selected comport
+     * @param comPort, the comport name
+     */
     public void setComPort(String comPort) {
         this.comPort = comPort;
     }
 
-    public void readConfigFromArduino(){
 
-    }
+    /**
+     * Validate the config
+     * @return, true of false
+     */
     public boolean checkConfig(){
         if(questions.size() == 0){
             return false;
@@ -404,6 +471,7 @@ public class IoTmodel extends Observable implements Observer {
         return true;
     }
 
+    // get, set frame
     public Frame getFrame() {
         return frame;
     }
@@ -411,6 +479,7 @@ public class IoTmodel extends Observable implements Observer {
         this.frame = frame;
     }
 
+    // get a comport
     public ArduinoSerialPort getComPort() {
         return getPort(comPort);
     }

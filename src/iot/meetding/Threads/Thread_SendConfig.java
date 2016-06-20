@@ -20,7 +20,7 @@ import static jssc.SerialPortException.TYPE_PORT_NOT_OPENED;
  * Created by Rob on 15-6-2016.
  *
  */
-public class Thread_SendConfig extends Thread implements SerialPortEventListener {
+public class Thread_SendConfig extends Thread{
 
 
     private JDialog dlg;
@@ -34,10 +34,6 @@ public class Thread_SendConfig extends Thread implements SerialPortEventListener
         }
         IoTmodel model =  IoTmodel.getInstance();
 
-
-
-
-
         dlg = new JDialog(model.getFrame(), "Even gedult a.u.b.", true);
         dpb = new JProgressBar(0,100);
 
@@ -49,24 +45,29 @@ public class Thread_SendConfig extends Thread implements SerialPortEventListener
         final int y = (screenSize.height - dlg.getHeight()) / 2;
         dlg.setLocation(x, y);
 
-        Thread t = new Thread(() -> {
-            dlg.setVisible(true);
-        });
-        t.start();
     }
 
 
     @Override
     public void run(){
         super.run();
+
+        Thread t = new Thread(() -> {
+            dlg.setVisible(true);
+        });
+        t.start();
         try {
+            // create the config file
             bytes =IoTmodel.getInstance().createConfigFile();
             dpb.setMaximum(bytes.size());
             System.out.println(bytes.size() + 5);
+            // tell the arduino we are sending a new config file
             port.writeString(ArduinoSerialPort.MESSAGE_SEND_CONFIG);
 
+            // the arduino has a small serial buffer (66 byte)
+            // we cannot send the full byte array so we send a single byte and then wait 1ms.
+            // this gives the arduino to proses the data
             for (byte[] buff : bytes) {
-                System.out.println(buff.length);
                 for(byte b : buff){
                     port.writeByte(b);
                     sleep(1);
@@ -76,20 +77,27 @@ public class Thread_SendConfig extends Thread implements SerialPortEventListener
             }
 
             sleep(100);
+            // send end of file
             port.writeString(ArduinoSerialPort.ANSWER_SEND_CONFIG);
             dpb.setValue(dpb.getValue() + 1);
+
+            // give arduino time to finish
             sleep(5000);
+
+            // Send the current time to the arduino to ajuist the rtc clock
             port.writeString(ArduinoSerialPort.MESSAGE_SEND_TIME);
             dpb.setValue(dpb.getValue() + 1);
 
             String time = getTime();
-            System.out.println(time);
+
             port.writeBytes(time.getBytes());
+
             dpb.setValue(dpb.getValue() + 1);
             sleep(100);
             dpb.setValue(dpb.getValue() + 1);
             port.writeString(ArduinoSerialPort.ANSWER_SEND_TIME);
             dpb.setValue(dpb.getValue() + 1);
+
         }catch (Exception e){
             e.printStackTrace();
             System.out.println("Error sending");
@@ -98,23 +106,12 @@ public class Thread_SendConfig extends Thread implements SerialPortEventListener
         }
     }
 
-    public byte[] longToBytes(long x) {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-        buffer.putLong(x);
-        return buffer.array();
-    }
-
-    @Override
-    public void serialEvent(SerialPortEvent serialPortEvent) {
-
-    }
-
     private String getTime(){
         Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("Europe/Amsterdam"));
-        long time =  cal.getTimeInMillis();
-        time += cal.get(Calendar.DST_OFFSET);
-        time += cal.getTimeZone().getRawOffset();
-        return (time / 1000) + "";
+        long time =  cal.getTimeInMillis(); // this returns the UTC time
+        time += cal.get(Calendar.DST_OFFSET); // add daylight saveing time offset
+        time += cal.getTimeZone().getRawOffset(); // add time zone offset
+        return (time / 1000) + ""; // convert ms to s;
 
     }
 }

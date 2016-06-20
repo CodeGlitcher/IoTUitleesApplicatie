@@ -17,19 +17,27 @@ import java.util.Calendar;
 
 /**
  * Created by Rob on 23-5-2016.
+ * A thread for reading data from the arduino.
  *
  */
 public class Thread_ReadData extends Thread implements SerialPortEventListener {
+
 
 
     private FileOutputStream stream;
     private WindowDataReadArduino data;
     private ArduinoSerialPort port;
     private boolean done = false;
-    private boolean isFirstLine = true;
     private boolean got_file_size = false;
-    private boolean fileExist;
     private String temp = "";
+
+
+    /**
+     * Public constructor
+     * @param port; An open serial port
+     * @param data; Window data class
+     * @throws SerialPortException
+     */
     public Thread_ReadData(ArduinoSerialPort port, WindowDataReadArduino data) throws SerialPortException {
         if(!port.isOpened()){
             throw new SerialPortException(port.getPortName(), "Thread read data constructor", SerialPortException.TYPE_PORT_NOT_OPENED);
@@ -39,19 +47,17 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
         this.port = port;
     }
 
-    private Calendar start;
-
     @Override
     public void run() {
         super.run();
-        start = Calendar.getInstance();
+        Calendar start = Calendar.getInstance();
         try {
             File f = IoTmodel.getInstance().getDataDir();
             File csv = new File(f, "data.csv");
-            fileExist = csv.exists();
+            boolean fileExist = csv.exists();
             // rename old file to prevent data loss
-            if(fileExist && !data.appendCSV()){
-                data.appendLogData("Renaming old file");
+            if(fileExist){
+                data.appendLogData("Hernoemen van oud bestand");
                 if(!csv.renameTo(new File(f, String.format("data-%1d.csv", System.currentTimeMillis())))){
                     data.appendLogData("Cannot rename data.csv");
                     fileExist = false;
@@ -59,15 +65,15 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
                 }
             }
             // open file
-            data.appendLogData("Opening file");
-            stream = new FileOutputStream(csv, data.appendCSV());
+            data.appendLogData("Bestand aanmaken");
+            stream = new FileOutputStream(csv);
             data.resetProgress();
             // request data from arduino
-            data.appendLogData("Requesting data from arduino");
+            data.appendLogData("Data opvragen van klimaatscanner");
             port.addEventListener(this);
             port.writeString(ArduinoSerialPort.MESSAGE_READ_DATA);
 
-            // file for done
+            // wait for done
             while(!done){
                 sleep(1000);
             }
@@ -75,15 +81,15 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
 
             long diff = end.get(Calendar.MILLISECOND) - start.get(Calendar.MILLISECOND);
             end.setTimeInMillis(diff);
-            data.appendLogData("Total time needed: M:s" + end.get(Calendar.MINUTE) + ":" + end.get(Calendar.SECOND));
+            data.appendLogData(String.format("Tijd nodig voor het uitlezen: %d:%d (m:s)",end.get(Calendar.MINUTE),end.get(Calendar.SECOND)));
             // close
-            data.appendLogData("Closing file");
+            data.appendLogData("Sluiten bestaden");
             stream.close();
             port.removeEventListener();
             Desktop.getDesktop().open(f);
 
         } catch (Exception exception) {
-            data.appendLogData("Error reading");
+            data.appendLogData("Onverwachte fout, zie error bericht voor meer details.");
             data.appendLogData(exception.getMessage());
         }
 
@@ -106,29 +112,23 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
                         return;
                     }
                 }
-                data.addProgress(buff.length);
-                // if we are stil on the isFirstLine line
-                if(data.appendCSV() && isFirstLine && fileExist){
-                    if(message.contains("\n")){ // ignore data until \n is found
-                        String tmp = message.substring(message.indexOf("\n")+1, message.length()); // get data after \n en write it.
-                        stream.write(tmp.getBytes());
-                        isFirstLine = false;
-                    }
-                    return;
-                }
+
                 // check for end of file command
                 if(message.endsWith(ArduinoSerialPort.ANSWER_READ_DATA)){
                     done = true;
                     String trim = message.substring(0,message.length() - ArduinoSerialPort.ANSWER_READ_DATA.length());
                     stream.write(trim.getBytes());
-                    data.appendLogData("End of File command received");
+                    data.appendLogData("Einde csv file bereikt");
                     return;
                 }
+
+                // some progress has been made. Update progressbar
+                data.addProgress(buff.length);
 
                 // write data to file
                 stream.write(buff);
             } catch (SerialPortException ex) {
-                data.appendLogData("Reading failed, data corrupt. Delete data file and try aggain");
+                data.appendLogData("Uitlezen mislukt, verwijder data.csv en probeer opnieuw");
                 done = true;// something went wrong stop this thread.
             } catch (IOException e) {
                 e.printStackTrace();

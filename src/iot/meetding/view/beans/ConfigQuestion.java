@@ -7,7 +7,7 @@ import java.util.Observable;
 
 /**
  * Created by Rob on 29-5-2016.
- *
+ * A class that hold information of a question
  */
 public class ConfigQuestion extends Observable {
 

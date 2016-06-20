@@ -4,7 +4,7 @@ import java.util.Observable;
 
 /**
  * Created by Rob on 29-5-2016.
- *
+ * A class to hold config information.
  */
 public class ConfigItem<x> extends Observable {
 

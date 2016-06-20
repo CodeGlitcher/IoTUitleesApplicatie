@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.ParseException;
 
+/**
+ * Custom textfield that displays a hint text
+ */
 public class HintTextField extends JTextField {
 
     private final String _hint;

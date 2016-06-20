@@ -20,16 +20,16 @@ import javax.swing.table.*;
  */
 public class ButtonColumn extends AbstractCellEditor implements TableCellRenderer, TableCellEditor, ActionListener, MouseListener
 {
-    private JTable table;
-    private Action action;
-    private int mnemonic;
-    private Border originalBorder;
-    private Border focusBorder;
+    protected JTable table;
+    protected Action action;
+    protected int mnemonic;
+    protected Border originalBorder;
+    protected Border focusBorder;
 
-    private JButton renderButton;
-    private JButton editButton;
-    private Object editorValue;
-    private boolean isButtonColumnEditor;
+    protected JButton renderButton;
+    protected JButton editButton;
+    protected Object editorValue;
+    protected boolean isButtonColumnEditor;
 
     /**
      *  Create the ButtonColumn to be used as a renderer and editor. The

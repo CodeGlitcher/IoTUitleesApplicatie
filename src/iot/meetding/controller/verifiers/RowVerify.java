@@ -5,7 +5,7 @@ import java.awt.*;
 
 /**
  * Created by Rob on 7-6-2016.
- *
+ * Row verify, Checks if a string does not go beyond the maximum row length
  */
 public class RowVerify extends InputVerifier {
 

@@ -12,6 +12,7 @@ import java.util.Observer;
 
 /**
  * Created by Rob on 13-5-2016.
+ *
  */
 public class MainWindow extends JFrame implements ActionListener, Observer {
 
@@ -22,7 +23,6 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     private JButton button_refresh;
     private JPanel main;
     private JTextArea textArea_output;
-    private JCheckBox checkBox_appendCSV;
     private JTabbedPane mainPanel;
     private JScrollPane scrollPane_scrollTextArea;
     private JPanel t;
@@ -44,7 +44,6 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
         // setup action listeners
         button_refresh.addActionListener(this);
         button_readArduino.addActionListener(this);
-        checkBox_appendCSV.addActionListener(this);
 
         // if window is closed, end application (default is hide window)
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -67,8 +66,6 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
         } else if (action.equals(button_readArduino.getActionCommand())) {
             data_read_window.clearLogData();
             model.startReadData((String) comboBox_comPorts.getSelectedItem(), data_read_window);
-        } else if (action.equals(checkBox_appendCSV.getActionCommand())) {
-            data_read_window.setAppendCSV(checkBox_appendCSV.isSelected());
         } else if (action.equals(comboBox_comPorts.getActionCommand())){
             model.setComPort((String)comboBox_comPorts.getSelectedItem());
         }
