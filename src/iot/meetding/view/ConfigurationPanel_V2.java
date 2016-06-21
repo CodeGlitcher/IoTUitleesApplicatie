@@ -22,6 +22,8 @@ import java.util.Observer;
 
 /**
  * Created by Rob on 8-6-2016.
+ * Class that holds logic for configuration panel
+ * (V2 because first configuration panel files went corrupt)
  */
 public class ConfigurationPanel_V2 implements Observer, ActionListener {
 
@@ -52,7 +54,9 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
     private int COLUMN_EDIT = 2;
     private int COLUMN_DELETE =3;
 
-
+    /**
+     * Create custom components
+     */
     public void createUIComponents() {
         textField_IntervalTime = new HintTextField("Hoe vaak moet er gemeten worden? Vul 0 in om geen intervalmetingen te donen.", new IntVerify());
         textField_intervalQuestion = new HintTextField("Hoeveel tijd moet er tussen bevragingen zitten", new IntVerify());
@@ -73,6 +77,22 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         table_Qeustion.setVisible(true);
         table_Qeustion.setFillsViewportHeight(true);
 
+        configureTable();
+
+        button_Save.addActionListener(this);
+        button_AddQuestion.addActionListener(this);
+        button_DownloadFromArduino.addActionListener(this);
+        button_SendArduino.addActionListener(this);
+        button_LoadLocalFile.addActionListener(this);
+
+        fillUI();
+    }
+
+    /**
+     * Build table and add column button
+     */
+    private void configureTable() {
+        // create actions for buttons
         Action edit = new AbstractAction() {
             public void actionPerformed(ActionEvent e) {
                 int modelRow = Integer.valueOf(e.getActionCommand());
@@ -89,30 +109,27 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
                 IoTmodel.getInstance().getQuestions().get(modelRow).delete();
             }
         };
+        // set column sizes
         table_Qeustion.getColumnModel().getColumn(COLUMN_ID).setMaxWidth(50);
         table_Qeustion.getColumnModel().getColumn(COLUMN_QUESTION).setPreferredWidth(400);
         table_Qeustion.getColumnModel().getColumn(COLUMN_EDIT).setMaxWidth(80);
         table_Qeustion.getColumnModel().getColumn(COLUMN_DELETE).setMaxWidth(80);
         table_Qeustion.getTableHeader().setReorderingAllowed(false);
-
+        // create button columns
         new ButtonColumn(table_Qeustion, edit, COLUMN_EDIT);
         new ButtonColumn(table_Qeustion, delete, COLUMN_DELETE);
-
-        button_Save.addActionListener(this);
-        button_AddQuestion.addActionListener(this);
-        button_DownloadFromArduino.addActionListener(this);
-        button_SendArduino.addActionListener(this);
-        button_LoadLocalFile.addActionListener(this);
-
-        fillUI();
     }
 
+    // on update filuit
     @Override
     public void update(Observable o, Object arg) {
         fillUI();
     }
 
 
+    /**
+     * Get data from model and set in the textfields
+     */
     private void fillUI() {
         tModel.setRowCount(0);
         IoTmodel model = IoTmodel.getInstance();
@@ -149,6 +166,7 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         }
     }
 
+    // create question row for the table
     private Object[] createRow(ConfigQuestion q) {
         Object[] result = new Object[tModel.getColumnCount()];
 
@@ -162,12 +180,13 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         updateModel();
+        IoTmodel iotModel = IoTmodel.getInstance();
         String action = e.getActionCommand();
         if(action.equals(button_Save.getActionCommand())){
             saveConfig();
         } else if (action.equals(button_AddQuestion.getActionCommand())) {
             ConfigQuestion q = IoTmodel.getInstance().createQuestion();
-            EditQuestion dialog = new EditQuestion(q);
+            EditQuestion dialog = new EditQuestion(iotModel.getFrame(),true, q);
             dialog.pack();
             dialog.setVisible(true);
         } else if(action.equals(button_LoadLocalFile.getActionCommand())){
@@ -176,12 +195,11 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         try{
             if(action.equals(button_SendArduino.getActionCommand())) {
                 //TODO
-                IoTmodel model = IoTmodel.getInstance();
-                if(model.checkConfig()){
-                    new Thread_SendConfig(model.getComPort()).start();
+
+                if(iotModel.checkConfig()){
+                    new Thread_SendConfig(iotModel.getComPort()).start();
                 } else {
-                    System.out.print("?");
-                    JOptionPane.showMessageDialog(model.getFrame(), "Je instellingen kloppen niet.\nZorg dat alle velden een geldige waarde hebben.");
+                    JOptionPane.showMessageDialog(iotModel.getFrame(), "Je instellingen kloppen niet.\nZorg dat alle velden een geldige waarde hebben.");
                 }
 
             } else if (action.equals(button_DownloadFromArduino.getActionCommand())){
@@ -195,16 +213,22 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
     }
 
 
-
+    /**
+     * Load config file
+     */
     private void loadConfigFile() {
         try {
             File dir = IoTmodel.getInstance().getConfigDir();
             IoTmodel.getInstance().readConfig(new File(dir, "local_config.ini"));
         } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Laen mislukt\n\n"+e.getMessage());
             e.printStackTrace();
         }
     }
 
+    /**
+     * Save config file
+     */
     private void saveConfig() {
         try{
             IoTmodel model = IoTmodel.getInstance();
@@ -230,7 +254,10 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
 
     }
 
-
+    /**
+     * Update the model.
+     *
+     */
     private void updateModel() {
         IoTmodel m = IoTmodel.getInstance();
         m.getMeasurementsConfig().setValue((Integer.parseInt(!textField_IntervalTime.getText().equals("") ? textField_IntervalTime.getText() : "0")));

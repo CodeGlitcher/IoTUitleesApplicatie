@@ -27,6 +27,9 @@ public class ArduinoSerialPort extends SerialPort {
     public static final String MESSAGE_SEND_TIME =  "#4";
     public static final String ANSWER_SEND_TIME = "$";
 
+    public static final String MESSAGE_REMOVE_DATA = "#6";
+    public static final String ANSWER_REMOVE_DATA = "$6";
+
 
     public static final byte DELIMITER = (byte) '\n';
 

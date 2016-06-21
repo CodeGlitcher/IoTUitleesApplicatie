@@ -4,6 +4,7 @@ import iot.meetding.ArduinoSerialPort;
 import iot.meetding.controller.verifiers.RowVerify;
 import iot.meetding.threads.Thread_CheckArduino;
 import iot.meetding.threads.Thread_ReadData;
+import iot.meetding.threads.Thread_RemoveData;
 import iot.meetding.view.beans.ConfigItem;
 import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.beans.WindowDataReadArduino;
@@ -34,9 +35,9 @@ public class IoTmodel extends Observable implements Observer {
     // list of serial ports
     private TreeMap<String,ArduinoSerialPort> ports;
     // active thread
-    private  Thread t;
+    private  ArrayList<Thread> threads;
     // number of threads
-    private int threadCounter = 0;
+
 
 
     // config data
@@ -57,6 +58,7 @@ public class IoTmodel extends Observable implements Observer {
      * private constructor
      */
     private IoTmodel() {
+        threads = new ArrayList<>();
         comPort = "";
         ports = new TreeMap<>();
 
@@ -103,7 +105,7 @@ public class IoTmodel extends Observable implements Observer {
      * @param data window data object
      */
     public synchronized void updateComPorts(WindowDataReadArduino data) {
-        if(threadCounter != 0){
+        if(threadRunning()){
             data.appendLogData("Er wordt al gezocht naar klimaatscanners");
             return;
         }
@@ -118,17 +120,23 @@ public class IoTmodel extends Observable implements Observer {
             // sometimes the serial library returns the same port multiple times.
             // we filter the result so only 1 port is used
             if (result.add(portName)) { // make sure only 1 thread per comport
-                try {
-                    t = new Thread_CheckArduino(new ArduinoSerialPort(portName),data);
-                    t.start();
-                    threadCounter++;
-                } catch (SerialPortException e) {
-                    data.appendLogData("Kan serial poort niet openen");
-                    data.appendLogData(e.getMessage());
-                    e.printStackTrace();
-                }
+                System.out.println(portName);
+                t = new Thread_CheckArduino(new ArduinoSerialPort(portName),data);
+                threads.add(t);
+                t.start();
+
             }
         }
+    }
+
+    private boolean threadRunning(){
+        for (Thread t : threads){
+            if(t.isAlive()){
+                return true;
+            }
+        }
+        threads.clear();
+        return false;
     }
 
     /**
@@ -169,32 +177,50 @@ public class IoTmodel extends Observable implements Observer {
 
     /**
      *
-     * @param selectedItem
-     * @return
+     * @param selectedItem, get a port
+     * @return ArduinoSerialPort
      */
     private ArduinoSerialPort getPort(String selectedItem) {
         return ports.get(selectedItem);
     }
 
 
-    public synchronized void closeThread(){
-        threadCounter--;
-    }
 
 
     /**
      * Start a thread for reading data from the arduino.
      * This only starts if no other thread is running.
-     * @param comPort
      * @param data
      */
-    public void startReadData(String comPort, WindowDataReadArduino data) {
-        if(t != null && t.isAlive()){
-            data.appendLogData("Process still running");
+    public void startReadData(WindowDataReadArduino data) {
+        if(threadRunning()){
+            data.appendLogData("De applicatie is nog steeds bezig");
             return;
         }
         try {
+            Thread t;
             t = new Thread_ReadData(model.getPort(comPort), data);
+            threads.add(t);
+            t.start();
+        } catch (SerialPortException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Start a thread for reading data from the arduino.
+     * This only starts if no other thread is running.
+     * @param data
+     */
+    public void startRemoveData(WindowDataReadArduino data) {
+        if(threadRunning()){
+            data.appendLogData("De applicatie is nog steeds bezig");
+            return;
+        }
+        try {
+            Thread t;
+            t = new Thread_RemoveData(model.getPort(comPort), data);
+            threads.add(t);
             t.start();
         } catch (SerialPortException e) {
             e.printStackTrace();

@@ -23,12 +23,8 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
     private WindowDataReadArduino data;
     private ArduinoSerialPort port;
 
-    public Thread_CheckArduino(ArduinoSerialPort port, WindowDataReadArduino data) throws SerialPortException {
-        // if port is not open open it.
-        if (!port.isOpened()) {
-            port.openPort();
+    public Thread_CheckArduino(ArduinoSerialPort port, WindowDataReadArduino data)  {
 
-        }
 
         this.data = data;
         this.port = port;
@@ -38,6 +34,11 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
     public void run() {
         super.run();
         try {
+            // if port is not open open it.
+            if (!port.isOpened()) {
+                port.openPort();
+
+            }
             try {
                 port.addEventListener(this);
                 sleep(ARDUINO_BOOT_TIME);
@@ -62,8 +63,10 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
             } catch (SerialPortException e) {
                 // null
             } // make sure the thread is closed
-        } finally {
-            IoTmodel.getInstance().closeThread();
+        } catch (SerialPortException e) {
+            // fail
+            data.appendLogData("Geen klimaatscanner, verbingen verbreken.");
+
         }
     }
 

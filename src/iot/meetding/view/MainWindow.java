@@ -12,7 +12,7 @@ import java.util.Observer;
 
 /**
  * Created by Rob on 13-5-2016.
- *
+ * Main window
  */
 public class MainWindow extends JFrame implements ActionListener, Observer {
 
@@ -26,10 +26,14 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     private JTabbedPane mainPanel;
     private JScrollPane scrollPane_scrollTextArea;
     private JPanel t;
+    private JButton button_removeData;
 
     private IoTmodel model;
     private WindowDataReadArduino data_read_window;
 
+    /**
+     * Pulic contructor
+     */
     public MainWindow() {
         data_read_window = new WindowDataReadArduino();
         data_read_window.addObserver(this);
@@ -44,7 +48,7 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
         // setup action listeners
         button_refresh.addActionListener(this);
         button_readArduino.addActionListener(this);
-
+        button_removeData.addActionListener(this);
         // if window is closed, end application (default is hide window)
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -65,9 +69,11 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
             model.updateComPorts(data_read_window);
         } else if (action.equals(button_readArduino.getActionCommand())) {
             data_read_window.clearLogData();
-            model.startReadData((String) comboBox_comPorts.getSelectedItem(), data_read_window);
+            model.startReadData(data_read_window);
         } else if (action.equals(comboBox_comPorts.getActionCommand())){
             model.setComPort((String)comboBox_comPorts.getSelectedItem());
+        } else if (action.equals(button_removeData.getActionCommand())){
+            model.startRemoveData(data_read_window);
         }
     }
 

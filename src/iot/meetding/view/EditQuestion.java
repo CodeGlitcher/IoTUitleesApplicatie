@@ -19,6 +19,9 @@ import java.util.ArrayList;
 
 import static iot.meetding.controller.verifiers.RowVerify.MAX_LENGTH;
 
+/**
+ * EditQuestion dialog
+ */
 public class EditQuestion extends JDialog {
     private JPanel contentPane;
     private JButton buttonOK;
@@ -48,6 +51,10 @@ public class EditQuestion extends JDialog {
 
     }
 
+    /**
+     * Constructor for creating interface.
+     * @param question, the question to display
+     */
     private void __construct(ConfigQuestion question){
         setContentPane(contentPane);
         setModal(true);
@@ -74,28 +81,15 @@ public class EditQuestion extends JDialog {
         textField_QuestionPart3.setText(question.getQeustionPart(2));
         textField_QuestionPart4.setText(question.getQeustionPart(3));
         createTable(question);
+        updateLabels();
     }
 
-    public EditQuestion(ConfigQuestion question) {
-        super();
-        __construct(question);
-
-
-    }
 
     private void addActionListener() {
         // Add action listeners
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onOK();
-            }
-        });
+        buttonOK.addActionListener(e -> onOK());
 
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        });
+        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -106,21 +100,16 @@ public class EditQuestion extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
         // create a new answer button
-        buttton_AddAnswer.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                addAnswer();
-            }
-        });
+        buttton_AddAnswer.addActionListener(e -> addAnswer());
     }
 
+    /**
+     * Create table
+     * @param question, the question
+     */
     private void createTable(ConfigQuestion question) {
         /// create table
         tModel = new AnswerTableModel();
@@ -141,30 +130,27 @@ public class EditQuestion extends JDialog {
             }
         };
         // add button to table
-        new ButtonColumnRow3(table_answers, delete, COLUMN_BUTTON);
+        new ButtonColumnRow3(table_answers, delete, COLUMN_BUTTON, ConfigQuestion.ROWS_QUESTION);
 
         // if a cell value changes, recalculate row length
-        tModel.addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                int row = table_answers.getSelectedRow();
+        tModel.addTableModelListener(e -> {
+            int row = table_answers.getSelectedRow();
 
-                // table change but no row selected
-                if(row < 0){ // do nothing
-                    return;
-                }
-                // resul is the new value to insert in the DB
-                String result = table_answers.getValueAt(row, COLUMN_ANSWER).toString();
-                // update is my method to update. Update needs the id for
-                // the where clausule. resul is the value that will receive
-                // the cell and you need column to tell what to update.
-                String newValue = String.format("(%d/%d)",result.length(), MAX_LENGTH);
-                String curr = table_answers.getValueAt(row, COLUMN_CHARS).toString();
-                // setting the value will trigger a new update event.
-                // only set value when it is different to prevent stackoverflow error
-                if(!newValue.equals(curr)){
-                    tModel.setValueAt(newValue, row , COLUMN_CHARS );
-                }
+            // table change but no row selected
+            if(row < 0){ // do nothing
+                return;
+            }
+            // resul is the new value to insert in the DB
+            String result = table_answers.getValueAt(row, COLUMN_ANSWER).toString();
+            // update is my method to update. Update needs the id for
+            // the where clausule. resul is the value that will receive
+            // the cell and you need column to tell what to update.
+            String newValue = String.format("(%d/%d)",result.length(), MAX_LENGTH);
+            String curr = table_answers.getValueAt(row, COLUMN_CHARS).toString();
+            // setting the value will trigger a new update event.
+            // only set value when it is different to prevent stackoverflow error
+            if(!newValue.equals(curr)){
+                tModel.setValueAt(newValue, row , COLUMN_CHARS );
             }
         });
         table_answers.getTableHeader().setReorderingAllowed(false);
@@ -262,13 +248,10 @@ public class EditQuestion extends JDialog {
         dispose();
     }
 
-    public static void main(String[] args) {
-        EditQuestion dialog = new EditQuestion(new ConfigQuestion());
-        dialog.pack();
-        dialog.setVisible(true);
-        System.exit(0);
-    }
 
+    /**
+     * create custom ui components
+     */
     private void createUIComponents() {
         textField_QuestionPart1 = new HintTextField("De eerste regel van de vraag", new RowVerify());
         textField_QuestionPart2 = new HintTextField("De tweede regel van de vraag", new RowVerify());
@@ -277,6 +260,9 @@ public class EditQuestion extends JDialog {
     }
 
 
+    /**
+     * Update labels to display amount of characters
+     */
     private void updateLabels() {
         label_Qeustion1.setText(String.format("(%d/%d)", textField_QuestionPart1.getText().length(), MAX_LENGTH));
         label_Qeustion2.setText(String.format("(%d/%d)", textField_QuestionPart2.getText().length(), MAX_LENGTH));
@@ -285,7 +271,9 @@ public class EditQuestion extends JDialog {
     }
 
 
-
+    /**
+     * Listener for updating labels
+     */
     private class QuestionListener implements DocumentListener{
 
         @Override
@@ -306,13 +294,17 @@ public class EditQuestion extends JDialog {
     }
 
 
-    public class AnswerTableModel extends DefaultTableModel {
+    /**
+     * TableModel class for answer table
+     */
+    private class AnswerTableModel extends DefaultTableModel {
 
 
         /**
-         * @param row
-         * @param column
-         * @return
+         * Checks if a cell is editable
+         * @param row, the row
+         * @param column, the column
+         * @return true|false
          */
         @Override
         public boolean isCellEditable(int row, int column){

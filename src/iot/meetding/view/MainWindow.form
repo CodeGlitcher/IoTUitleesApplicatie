@@ -38,7 +38,7 @@
                 <properties>
                   <enabled value="true"/>
                   <text value="Lees"/>
-                  <toolTipText value="Haal data  van apparaat"/>
+                  <toolTipText value="Haal de data van de klimaatscanner"/>
                   <visible value="true"/>
                 </properties>
               </component>
@@ -87,6 +87,15 @@
                   <grid row="2" column="2" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
                 </constraints>
               </vspacer>
+              <component id="c45a3" class="javax.swing.JButton" binding="button_removeData">
+                <constraints>
+                  <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties>
+                  <text value="Verwijder data"/>
+                  <toolTipText value="Verwijder data van de klimaatscanner"/>
+                </properties>
+              </component>
             </children>
           </grid>
           <grid id="7540" binding="t" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
@@ -125,6 +134,7 @@
         <properties>
           <actionCommand value="action_refresh"/>
           <text value="Verversen"/>
+          <toolTipText value="Vernieuw de lijst met klimaatscanners"/>
         </properties>
       </component>
     </children>

@@ -60,7 +60,6 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
                 data.appendLogData("Hernoemen van oud bestand");
                 if(!csv.renameTo(new File(f, String.format("data-%1d.csv", System.currentTimeMillis())))){
                     data.appendLogData("Cannot rename data.csv");
-                    fileExist = false;
                     return;
                 }
             }
@@ -118,6 +117,7 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
                     done = true;
                     String trim = message.substring(0,message.length() - ArduinoSerialPort.ANSWER_READ_DATA.length());
                     stream.write(trim.getBytes());
+                    System.out.println("einde file");
                     data.appendLogData("Einde csv file bereikt");
                     return;
                 }
