@@ -59,7 +59,7 @@ public class Thread_CheckArduino extends Thread implements SerialPortEventListen
 
             // if port is not open open it.
             if (port.isOpened()) {
-                port.closePort();
+                close();
             }
             port.openPort();
 

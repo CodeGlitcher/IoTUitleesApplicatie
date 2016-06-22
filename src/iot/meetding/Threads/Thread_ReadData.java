@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Rob on 23-5-2016.
@@ -78,9 +79,14 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
             }
             Calendar end = Calendar.getInstance();
 
-            long diff = end.get(Calendar.MILLISECOND) - start.get(Calendar.MILLISECOND);
-            end.setTimeInMillis(diff);
-            data.appendLogData(String.format("Tijd nodig voor het uitlezen: %d:%d (m:s)",end.get(Calendar.MINUTE),end.get(Calendar.SECOND)));
+            long millis = end.getTimeInMillis() - start.getTimeInMillis();
+            String time = String.format("Tijd nodig voor het uitlezen: %d:%d (min:sec)",
+                    TimeUnit.MILLISECONDS.toMinutes(millis),
+                    TimeUnit.MILLISECONDS.toSeconds(millis) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+            );
+
+            data.appendLogData(time);
             // close
             data.appendLogData("Sluiten bestaden");
             stream.close();
@@ -94,6 +100,15 @@ public class Thread_ReadData extends Thread implements SerialPortEventListener {
 
     }
 
+    public int elapsed(Calendar before, Calendar after, int field) {
+        Calendar clone = (Calendar) before.clone(); // Otherwise changes are been reflected.
+        int elapsed = -1;
+        while (!clone.after(after)) {
+            clone.add(field, 1);
+            elapsed++;
+        }
+        return elapsed;
+    }
 
 
     @Override
