@@ -14,11 +14,13 @@ import org.ini4j.Ini;
 import org.ini4j.Profile;
 
 import java.awt.*;
+import java.awt.List;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 import java.util.Observable;
+import java.util.concurrent.*;
 
 /**
  * Created by Rob on 18-5-2016.
@@ -116,22 +118,37 @@ public class IoTmodel extends Observable implements Observer {
         Thread t;
         removeAllPorts();
         // check every port for a arduino
+
+
         for (String portName : portNames) {
             // sometimes the serial library returns the same port multiple times.
             // we filter the result so only 1 port is used
             if (result.add(portName)) { // make sure only 1 thread per comport
                 System.out.println(portName);
-                t = new Thread_CheckArduino(new ArduinoSerialPort(portName),data);
+                ArduinoSerialPort p = new ArduinoSerialPort(portName);
+                t = new Thread_CheckArduino(p,data);
                 threads.add(t);
                 t.start();
-
             }
         }
+
+
+
+
     }
 
     private boolean threadRunning(){
         for (Thread t : threads){
             if(t.isAlive()){
+                if(t instanceof Thread_CheckArduino){
+                    long start = ((Thread_CheckArduino) t).getStartTime();
+                    long runTime = System.currentTimeMillis() - start;
+                    if(runTime >= 5000){
+                        ((Thread_CheckArduino) t).close();
+                        System.err.println("forget thread");
+                        continue;
+                    }
+                }
                 return true;
             }
         }

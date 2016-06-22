@@ -64,11 +64,9 @@ public class MainWindow extends JFrame implements ActionListener, Observer {
     public void actionPerformed(ActionEvent e) {
         String action = e.getActionCommand();
         if (action.equals(button_refresh.getActionCommand())) {
-            data_read_window.clearLogData();
             comboBox_comPorts.removeAllItems();
             model.updateComPorts(data_read_window);
         } else if (action.equals(button_readArduino.getActionCommand())) {
-            data_read_window.clearLogData();
             model.startReadData(data_read_window);
         } else if (action.equals(comboBox_comPorts.getActionCommand())){
             model.setComPort((String)comboBox_comPorts.getSelectedItem());

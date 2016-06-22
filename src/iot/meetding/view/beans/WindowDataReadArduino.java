@@ -17,7 +17,7 @@ public class WindowDataReadArduino extends Observable {
         return logData;
     }
 
-    public void appendLogData(final String logData) {
+    public synchronized void appendLogData(final String logData) {
         this.logData = this.logData.concat(logData + "\n");
         change();
     }
