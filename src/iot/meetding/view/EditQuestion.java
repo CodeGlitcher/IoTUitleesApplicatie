@@ -2,6 +2,7 @@ package iot.meetding.view;
 
 import iot.meetding.controller.ButtonColumnRow3;
 import iot.meetding.controller.verifiers.RowVerify;
+import iot.meetding.model.IoTmodel;
 import iot.meetding.view.beans.ConfigQuestion;
 import iot.meetding.view.components.HintTextField;
 import jdk.nashorn.internal.runtime.regexp.joni.Config;
@@ -44,7 +45,6 @@ public class EditQuestion extends JDialog {
     private DefaultTableModel tModel;
 
     private ConfigQuestion question;
-
     public EditQuestion(Frame x ,boolean modal,ConfigQuestion question) {
         super(x,modal);
         __construct(question);
@@ -217,6 +217,17 @@ public class EditQuestion extends JDialog {
      * Get data from input fields and update the model
      */
     private void onOK() {
+
+        IoTmodel m = IoTmodel.getInstance();
+        if(!checkConfig()){
+            JOptionPane.showMessageDialog(m.getFrame(), "De instellingen zijn onjuist.\nZorg dat alle velden een geldige waarde hebben.\n\n" +
+                    "Mogelijke fouten zijn:\n" +
+                    " - Er moet minimaal 1 vraag ingevuld zijn.\n" +
+                    " - Elke vraag moet minimaal 1 antwoord hebben.\n" +
+                    " - De regels van de vraag en antwoordmogelijkheden mogen niet meer dan 17 tekens bevatten (inclusief spaties).\n");
+            return;
+        }
+
         question.setQuestion(0, textField_QuestionPart1.getText());
         question.setQuestion(1, textField_QuestionPart2.getText());
         question.setQuestion(2, textField_QuestionPart3.getText());
@@ -238,6 +249,32 @@ public class EditQuestion extends JDialog {
         question.setAnswers(newAnswers);
 
         dispose();
+
+
+    }
+
+    /**
+     * Checks if the input is valid
+     *
+     * @return true if the input is valid. false if not
+     */
+    private boolean checkConfig(){
+
+        int rows = tModel.getRowCount();
+        if(rows == 0){
+            return false;
+        }
+        for(int i = 0; i < rows; i++){
+            String answer =tModel.getValueAt(i,COLUMN_ANSWER).toString();
+            if(answer.length() > RowVerify.MAX_LENGTH){
+                return false;
+            }
+        }
+
+        return textField_QuestionPart1.getBackground().equals( Color.WHITE)
+                && textField_QuestionPart2.getBackground().equals( Color.WHITE)
+                &&  textField_QuestionPart3.getBackground().equals( Color.WHITE) &&
+                textField_QuestionPart4.getBackground().equals( Color.WHITE);
     }
 
     /**

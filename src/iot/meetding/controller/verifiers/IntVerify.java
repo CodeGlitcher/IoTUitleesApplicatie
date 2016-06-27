@@ -1,6 +1,7 @@
 package iot.meetding.controller.verifiers;
 
 import javax.swing.*;
+import java.awt.*;
 
 /**
  * Created by Rob on 1-6-2016.
@@ -23,8 +24,10 @@ public class IntVerify extends InputVerifier {
             }
             try{
                 Integer.parseInt(in);
+                input.setBackground(Color.WHITE);
                 return true;
             } catch (NumberFormatException e){
+                input.setBackground(Color.RED);
                 return false;
             }
         }

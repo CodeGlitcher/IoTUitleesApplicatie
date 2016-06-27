@@ -36,7 +36,7 @@ public class Thread_ReadConfig extends Thread implements SerialPortEventListener
 
         // create a dialog for progress
         IoTmodel model = IoTmodel.getInstance();
-        dlg = new JDialog(model.getFrame(), "Even gedult a.u.b.", true);
+        dlg = new JDialog(model.getFrame(), "Even geduld a.u.b.", true);
         dpb = new JProgressBar(0,100);
 
         dlg.add(BorderLayout.CENTER, dpb);

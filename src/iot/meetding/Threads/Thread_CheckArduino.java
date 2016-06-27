@@ -15,9 +15,9 @@ import jssc.SerialPortException;
  */
 public class Thread_CheckArduino extends Thread implements SerialPortEventListener {
     // max timeout for arduino to answer
-    private final int TIME_OUT = 5000;
+    private final int TIME_OUT = 10000;
     // the arduino needs some time to boot, give it this much time
-    private final int ARDUINO_BOOT_TIME = 3000;
+    private final int ARDUINO_BOOT_TIME = 5000;
 
     private boolean isArduino = false;
 
