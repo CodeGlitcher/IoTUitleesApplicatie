@@ -301,7 +301,7 @@ public class IoTmodel extends Observable implements Observer {
 
         result.add(String.format("begintijd=%d\n", startTime.getValue()).getBytes());
         result.add(String.format("eindtijd=%d\n", endTime.getValue()).getBytes());
-        result.add(String.format("vraaginterval=%d\n", timeRangeQuestion.getValue()).getBytes());
+        result.add(String.format("vraaginterval=%d\n", timeRangeQuestion.getValue() * 60).getBytes());
         result.add(String.format("sensorinterval=%d\n", timeRangeMeasure.getValue()).getBytes());
         result.add("\n".getBytes());
 
@@ -442,7 +442,7 @@ public class IoTmodel extends Observable implements Observer {
         startTime.setValue(Integer.parseInt(s.get("begintijd")));
         endTime.setValue(Integer.parseInt(s.get("eindtijd")));
         timeRangeMeasure.setValue(Integer.parseInt(s.get("sensorinterval")));
-        timeRangeQuestion.setValue(Integer.parseInt(s.get("vraaginterval")));
+        timeRangeQuestion.setValue(Integer.parseInt(s.get("vraaginterval")) / 60);
     }
 
     /**
@@ -502,6 +502,11 @@ public class IoTmodel extends Observable implements Observer {
         for(ConfigQuestion q : questions){
             if(q.getAnswers().size() == 0){
                 return false;
+            }
+            for(String questionPart : q.getQuestionParts()){
+                if(questionPart.length() > RowVerify.MAX_LENGTH){
+                    return false;
+                }
             }
             for(String[] answer : q.getAnswers()){
                 for(String s : answer){

@@ -194,13 +194,18 @@ public class ConfigurationPanel_V2 implements Observer, ActionListener {
         }
         try{
             if(action.equals(button_SendArduino.getActionCommand())) {
-                //TODO
-
                 if(iotModel.checkConfig()){
                     new Thread_SendConfig(iotModel.getComPort()).start();
                 } else {
-                    JOptionPane.showMessageDialog(iotModel.getFrame(), "Je instellingen kloppen niet.\nZorg dat alle velden een geldige waarde hebben.");
+                    JOptionPane.showMessageDialog(iotModel.getFrame(), "De instellingen zijn onjuist.\nZorg dat alle velden een geldige waarde hebben.\n\n" +
+                            "Mogelijke fouten zijn:\n" +
+                            " - Er moet minimaal 1 vraag ingevuld zijn.\n" +
+                            " - Elke vraag moet minimaal 1 antwoord hebben.\n" +
+                            " - De regels van de vraag en antwoordmogelijkheden mogen niet meer dan 17 tekens bevatten (inclusief spaties).\n");
                 }
+
+
+
 
             } else if (action.equals(button_DownloadFromArduino.getActionCommand())){
                 // for some reason  running this in a threads causes an exception. Simple solution run it on the main thread.
