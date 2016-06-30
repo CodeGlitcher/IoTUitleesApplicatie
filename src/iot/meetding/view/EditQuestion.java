@@ -130,7 +130,7 @@ public class EditQuestion extends JDialog {
             }
         };
         // add button to table
-        new ButtonColumnRow3(table_answers, delete, COLUMN_BUTTON, ConfigQuestion.ROWS_QUESTION);
+        new ButtonColumnRow3(table_answers, delete, COLUMN_BUTTON, ConfigQuestion.ROWS_ANSWER);
 
         // if a cell value changes, recalculate row length
         tModel.addTableModelListener(e -> {

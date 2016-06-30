@@ -38,6 +38,7 @@ public class ButtonColumnRow3 extends ButtonColumn
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column)
     {
+        System.out.println(row);
         if(row % buttonRow != 0){
             this.editorValue = value;
             return null;
@@ -59,6 +60,7 @@ public class ButtonColumnRow3 extends ButtonColumn
     public Component getTableCellRendererComponent(
             JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column)
     {
+
         if(row % buttonRow != 0){
             return null;
         }
